@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Freedom Corpus Calculator</title>
 <style>
-  :root{--bg:#f6f5f2;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,0.1);--border-s:rgba(0,0,0,0.2);--text:#1a1a18;--muted:#6b6b60;--hint:#a0a090;--success:#1d6a45;--success-bg:#eaf3de;--success-text:#27500a;--info-bg:#e6f1fb;--info-text:#0c447c;--danger:#a32d2d;--danger-bg:#fcebeb;--r-md:8px;--r-lg:12px}
-  @media(prefers-color-scheme:dark){:root{--bg:#0f0f0d;--surface:#1a1a16;--surface2:#222220;--border:rgba(255,255,255,0.1);--border-s:rgba(255,255,255,0.2);--text:#f0ede6;--muted:#8a8878;--hint:#55554a;--success:#4caf7d;--success-bg:#0a2e1a;--success-text:#81c995;--info-bg:#082040;--info-text:#85b7eb;--danger:#f09595;--danger-bg:#3b1010}}
+  :root{--bg:#f6f5f2;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,0.1);--border-s:rgba(0,0,0,0.2);--text:#1a1a18;--muted:#6b6b60;--hint:#a0a090;--success:#1d6a45;--success-bg:#eaf3de;--success-text:#27500a;--info-bg:#e6f1fb;--info-text:#0c447c;--danger:#a32d2d;--danger-bg:#fcebeb;--r-md:8px;--r-lg:12px;--accent:#7c3aed;--accent-bg:#f3effe;--accent-text:#4c1d95}
+  @media(prefers-color-scheme:dark){:root{--bg:#0f0f0d;--surface:#1a1a16;--surface2:#222220;--border:rgba(255,255,255,0.1);--border-s:rgba(255,255,255,0.2);--text:#f0ede6;--muted:#8a8878;--hint:#55554a;--success:#4caf7d;--success-bg:#0a2e1a;--success-text:#81c995;--info-bg:#082040;--info-text:#85b7eb;--danger:#f09595;--danger-bg:#3b1010;--accent:#a78bfa;--accent-bg:#1e1040;--accent-text:#c4b5fd}}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:0 0 60px}
   .wrap{max-width:680px;margin:0 auto;padding:40px 16px}
@@ -17,6 +17,7 @@
   .badge{font-size:11px;font-weight:600;border-radius:var(--r-md);padding:2px 8px}
   .badge.b{color:var(--info-text);background:var(--info-bg)}
   .badge.g{color:var(--success-text);background:var(--success-bg)}
+  .badge.p{color:var(--accent-text);background:var(--accent-bg)}
   .ctitle{font-size:15px;font-weight:500;flex:1}
   .csum{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
   .cbd{padding:16px}
@@ -32,6 +33,8 @@
   input[type=number],select{width:100%;padding:8px 10px;font-size:14px;background:var(--surface2);border:0.5px solid var(--border-s);border-radius:var(--r-md);color:var(--text);outline:none;-moz-appearance:textfield;box-sizing:border-box;font-family:inherit;transition:.15s}
   input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
   input[type=number]:focus,select:focus{border-color:var(--success);box-shadow:0 0 0 3px rgba(29,106,69,.1)}
+  input[type=number]:out-of-range{border-color:var(--danger);background:var(--danger-bg)}
+  input[type=number]:out-of-range:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(163,45,45,.15)}
   .hint{font-size:12px;color:var(--hint);margin-top:6px;line-height:1.5}
   .toggle{display:inline-flex;background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--r-md);padding:3px;margin-bottom:12px}
   .toggle button{padding:5px 14px;border:none;background:none;font-size:12px;font-weight:500;color:var(--muted);border-radius:6px;cursor:pointer;transition:.15s;font-family:inherit}
@@ -50,7 +53,7 @@
   .met{background:var(--surface2);border-radius:var(--r-md);padding:10px 12px}
   .ml{font-size:11px;color:var(--muted);margin-bottom:3px}
   .mv{font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
-  .mv.g{color:var(--success)} .mv.b{color:var(--info-text)}
+  .mv.g{color:var(--success)} .mv.b{color:var(--info-text)} .mv.p{color:var(--accent)}
   .brow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;gap:8px}
   .brow:last-child{border-bottom:none}
   .bl{color:var(--muted)} .bv{font-variant-numeric:tabular-nums;color:var(--text)}
@@ -66,6 +69,53 @@
   .free-banner p:first-child{font-weight:600;font-size:14px}
   .infl-note{font-size:12px;color:var(--hint);margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);line-height:1.6}
   .empty{text-align:center;padding:36px 16px;color:var(--hint);font-size:14px}
+
+  /* Step-up section */
+  .stepup-box{background:var(--accent-bg);border:0.5px solid rgba(124,58,237,.2);border-radius:var(--r-md);padding:12px;margin-top:10px}
+  .stepup-box .slbl{color:var(--accent-text)}
+  .stepup-toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:13px;color:var(--muted);margin-bottom:10px}
+  .stepup-toggle input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+  .stepup-toggle.active{color:var(--accent-text);font-weight:500}
+  .stepup-fields{display:none}
+  .stepup-fields.show{display:block}
+  .stepup-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .preset-btn{padding:4px 10px;border:0.5px solid var(--border-s);background:var(--surface2);border-radius:20px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:.15s;font-family:inherit}
+  .preset-btn:hover{border-color:var(--accent);color:var(--accent-text)}
+  .preset-btn.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-text)}
+
+  /* Target age section */
+  .target-box{background:var(--info-bg);border:0.5px solid rgba(12,68,124,.15);border-radius:var(--r-md);padding:12px;margin-top:10px}
+  .target-result{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-md);padding:10px 14px;margin-top:10px}
+  .target-result .trl{font-size:12px;color:var(--muted);margin-bottom:3px}
+  .target-result .trv{font-size:18px;font-weight:600;color:var(--info-text);font-variant-numeric:tabular-nums}
+  .target-result .trsub{font-size:12px;color:var(--muted);margin-top:2px}
+  .target-result.g .trv{color:var(--success)}
+  .target-result.p .trv{color:var(--accent)}
+
+  /* Savings modes */
+  .smode-wrap{display:flex;gap:8px;flex-direction:column;margin-bottom:10px}
+
+  /* Section label */
+  .section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:8px;margin-top:14px}
+  .section-label:first-child{margin-top:0}
+
+  /* Multiplier presets */
+  .mult-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+
+  /* Chart */
+  .chart-wrap{margin-top:16px;background:var(--surface2);border-radius:var(--r-md);padding:14px;overflow:hidden}
+  .chart-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+  .chart-title{font-size:12px;font-weight:600;color:var(--text)}
+  .chart-legend{display:flex;gap:14px}
+  .legend-item{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .ldot{width:14px;height:3px;border-radius:2px}
+  .ldot.solid{background:var(--success)}
+  .ldot.dashed{border-top:2px dashed var(--danger)}
+  #growth-chart{width:100%;display:block}
+
+  /* Validation warnings */
+  .warn-bar{background:var(--danger-bg);border:0.5px solid rgba(163,45,45,.25);border-radius:var(--r-md);padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--danger);line-height:1.5}
+  .warn-bar span{display:block}
 </style>
 </head>
 <body>
@@ -77,8 +127,17 @@
     <div class="chd"><span class="badge b">01</span><span class="ctitle">Monthly expenses</span><span class="csum" id="s-exp"></span></div>
     <div class="cbd">
       <div class="toggle"><button class="on" id="bmo" onclick="setMode('mo')">Monthly</button><button id="byr" onclick="setMode('yr')">Annual</button></div>
-      <div class="frow"><div class="field"><label id="elbl">Monthly expenses</label><div class="iw"><span class="pre">₹</span><input type="number" id="exp" placeholder="50000" oninput="calc()" step="1000"></div></div></div>
+      <div class="frow"><div class="field"><label id="elbl">Monthly expenses</label><div class="iw"><span class="pre">₹</span><input type="number" id="exp" placeholder="50000" oninput="calc()" step="1000" min="0"></div></div></div>
       <p class="hint">Total household spend — rent/EMI, food, transport, utilities, lifestyle, etc.</p>
+
+      <p class="section-label" style="margin-top:14px">Corpus multiplier</p>
+      <div class="mult-presets" id="mult-presets">
+        <button class="preset-btn" onclick="setMult(25,this)">25×</button>
+        <button class="preset-btn active" onclick="setMult(30,this)">30×</button>
+        <button class="preset-btn" onclick="setMult(35,this)">35×</button>
+        <button class="preset-btn" onclick="setMult(40,this)">40×</button>
+      </div>
+      <p class="hint">25× = 4% SWR · <strong>30× = 3.3% SWR (default)</strong> · 35× ≈ 2.9% · 40× = 2.5% (conservative)</p>
     </div>
   </div>
 
@@ -86,9 +145,9 @@
     <div class="chd"><span class="badge b">02</span><span class="ctitle">Passive income</span><span class="csum" id="s-pass"></span></div>
     <div class="cbd">
       <div class="frow">
-        <div class="field"><label>Rent / month</label><div class="iw"><span class="pre">₹</span><input type="number" id="rent" placeholder="0" oninput="calc()"></div></div>
-        <div class="field"><label>Dividends / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="divs" placeholder="0" oninput="calc()"></div></div>
-        <div class="field"><label>Other passive / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="oth" placeholder="0" oninput="calc()"></div></div>
+        <div class="field"><label>Rent / month</label><div class="iw"><span class="pre">₹</span><input type="number" id="rent" placeholder="0" oninput="calc()" min="0"></div></div>
+        <div class="field"><label>Dividends / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="divs" placeholder="0" oninput="calc()" min="0"></div></div>
+        <div class="field"><label>Other passive / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="oth" placeholder="0" oninput="calc()" min="0"></div></div>
       </div>
       <p class="hint">Only include income you'll reliably have post-retirement.</p>
     </div>
@@ -107,21 +166,61 @@
     <div class="cbd">
       <div id="ll"></div>
       <button class="add-btn" onclick="addLoan()">＋ Add a loan</button>
+      <p class="hint" style="margin-top:8px">Loans are treated at face value (no inflation applied).</p>
     </div>
   </div>
 
   <div class="card">
-    <div class="chd"><span class="badge g">05</span><span class="ctitle">Your progress</span><span class="csum" id="s-prog"></span></div>
+    <div class="chd"><span class="badge g">05</span><span class="ctitle">Your progress & savings</span><span class="csum" id="s-prog"></span></div>
     <div class="cbd">
       <div class="frow">
-        <div class="field"><label>Current age</label><div class="iw sw"><input type="number" id="age" placeholder="32" oninput="calc()"><span class="suf">yrs</span></div></div>
-        <div class="field"><label>Corpus saved so far</label><div class="iw"><span class="pre">₹</span><input type="number" id="saved" placeholder="0" oninput="calc()"></div></div>
+        <div class="field"><label>Current age</label><div class="iw sw"><input type="number" id="age" placeholder="32" oninput="calc()" min="1" max="100"><span class="suf">yrs</span></div></div>
+        <div class="field"><label>Corpus saved so far</label><div class="iw"><span class="pre">₹</span><input type="number" id="saved" placeholder="0" oninput="calc()" min="0"></div></div>
       </div>
       <div class="frow">
-        <div class="field"><label>Monthly savings</label><div class="iw"><span class="pre">₹</span><input type="number" id="msave" placeholder="30000" oninput="calc()"></div></div>
-        <div class="field"><label>Expected annual return</label><div class="iw sw"><input type="number" id="ret" placeholder="10" oninput="calc()"><span class="suf">%</span></div></div>
+        <div class="field"><label>Monthly savings</label><div class="iw"><span class="pre">₹</span><input type="number" id="msave" placeholder="30000" oninput="calc()" min="0"></div></div>
+        <div class="field"><label>Expected annual return</label><div class="iw sw"><input type="number" id="ret" placeholder="10" oninput="calc()" min="0" max="50" step="0.5"><span class="suf">%</span></div></div>
       </div>
-      <p class="hint">Assumes 6% long-term inflation for the nominal corpus note.</p>
+
+      <!-- Step-up investment -->
+      <div class="stepup-box">
+        <label class="stepup-toggle" id="stepup-lbl">
+          <input type="checkbox" id="stepup-chk" onchange="toggleStepUp()" />
+          <span>📈 Step-up investment (increase savings each year)</span>
+        </label>
+        <div class="stepup-fields" id="stepup-fields">
+          <p class="section-label" style="margin-top:0">Annual step-up %</p>
+          <div class="stepup-presets" id="stepup-presets">
+            <button class="preset-btn" onclick="setStepUp(5,this)">5%</button>
+            <button class="preset-btn" onclick="setStepUp(10,this)">10%</button>
+            <button class="preset-btn" onclick="setStepUp('custom',this)">Custom</button>
+          </div>
+          <div class="frow" id="stepup-custom-wrap" style="display:none;">
+            <div class="field">
+              <label>Custom step-up %</label>
+              <div class="iw sw"><input type="number" id="stepup-val" placeholder="12" oninput="onCustomStepUp()" min="0" max="100" step="0.5"><span class="suf">%</span></div>
+            </div>
+          </div>
+          <p class="hint" style="margin-top:6px">Your monthly savings will grow by this % every year. E.g. save ₹30k now → ₹33k next year at 10% step-up.</p>
+        </div>
+      </div>
+
+      <p class="hint" style="margin-top:8px">Timeline uses 6% inflation. Living expenses inflate over the timeline; children's costs are pre-inflated to their target year; loans stay at face value.</p>
+    </div>
+  </div>
+
+  <!-- Target Age Calculator -->
+  <div class="card">
+    <div class="chd"><span class="badge p">06</span><span class="ctitle">Free by age — how much to save?</span></div>
+    <div class="cbd">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Enter a target age and we'll tell you exactly how much you need to save per month to hit your freedom corpus (inflation-adjusted).</p>
+      <div class="frow">
+        <div class="field">
+          <label>Target freedom age</label>
+          <div class="iw sw"><input type="number" id="target-age" placeholder="45" oninput="calc()" min="1" max="100"><span class="suf">yrs</span></div>
+        </div>
+      </div>
+      <div id="target-result-wrap"></div>
     </div>
   </div>
 
@@ -132,7 +231,14 @@
 </div>
 
 <script>
-let mode='mo',kN=0,lN=0;
+const INFLATION = 6;
+const STORAGE_KEY = 'freedom-calc-v2-state';
+let mode='mo', kN=0, lN=0;
+let stepUpActive=false, stepUpPct=0, stepUpMode=null;
+let multiplier=30;
+let _loading=false;
+
+/* ── Mode toggle ── */
 function setMode(m){
   mode=m;
   document.getElementById('bmo').className=m==='mo'?'on':'';
@@ -141,6 +247,47 @@ function setMode(m){
   document.getElementById('exp').placeholder=m==='mo'?'50000':'600000';
   calc();
 }
+
+/* ── Multiplier ── */
+function setMult(val, btn){
+  multiplier=val;
+  document.querySelectorAll('#mult-presets .preset-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  calc();
+}
+
+/* ── Step-up ── */
+function toggleStepUp(){
+  stepUpActive=document.getElementById('stepup-chk').checked;
+  const lbl=document.getElementById('stepup-lbl');
+  lbl.className='stepup-toggle'+(stepUpActive?' active':'');
+  document.getElementById('stepup-fields').className='stepup-fields'+(stepUpActive?' show':'');
+  calc();
+}
+
+function setStepUp(val, btn){
+  document.querySelectorAll('#stepup-presets .preset-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const customWrap=document.getElementById('stepup-custom-wrap');
+  if(val==='custom'){
+    customWrap.style.display='block';
+    stepUpMode='custom';
+    const cv=parseFloat(document.getElementById('stepup-val').value)||0;
+    stepUpPct=cv;
+  } else {
+    customWrap.style.display='none';
+    stepUpMode=val;
+    stepUpPct=val;
+  }
+  calc();
+}
+
+function onCustomStepUp(){
+  stepUpPct=Math.max(0,Math.min(100,parseFloat(document.getElementById('stepup-val').value)||0));
+  calc();
+}
+
+/* ── Formatting ── */
 function inr(n){
   n=Math.round(n);
   if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+' Cr';
@@ -153,16 +300,32 @@ function inrs(n){
   if(n>=100000) return '₹'+(n/100000).toFixed(1)+'L';
   return '₹'+n.toLocaleString('en-IN');
 }
+function chartLabel(n){
+  if(n>=10000000) return (n/10000000).toFixed(1)+'Cr';
+  if(n>=100000) return (n/100000).toFixed(0)+'L';
+  if(n>=1000) return (n/1000).toFixed(0)+'K';
+  return Math.round(n).toString();
+}
+
+/* ── Input helpers ── */
 function v(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function clamp(val,lo,hi){return Math.max(lo,Math.min(hi,val));}
+
+/* ── Dynamic children / loans ── */
 function addKid(){
   kN++;const id=kN;
   const d=document.createElement('div');d.className='sc';d.id='k'+id;
   d.innerHTML=`<p class="slbl">Child ${id}</p>
   <button class="rm" onclick="rm('k${id}')" title="Remove">✕</button>
   <div class="frow">
-    <div class="field"><label>Education fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()"></div></div>
-    <div class="field"><label>Marriage fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()"></div></div>
-  </div>`;
+    <div class="field"><label>Education fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()" min="0"></div></div>
+    <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="key${id}" placeholder="10" oninput="calc()" min="0" max="50"><span class="suf">yrs</span></div></div>
+  </div>
+  <div class="frow">
+    <div class="field"><label>Marriage fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()" min="0"></div></div>
+    <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="kmy${id}" placeholder="20" oninput="calc()" min="0" max="50"><span class="suf">yrs</span></div></div>
+  </div>
+  <p class="hint" style="margin-top:4px">Costs are auto-inflated at ${INFLATION}% to the target year.</p>`;
   document.getElementById('kl').appendChild(d);calc();
 }
 function addLoan(){
@@ -171,72 +334,550 @@ function addLoan(){
   d.innerHTML=`<button class="rm" onclick="rm('l${id}')" title="Remove">✕</button>
   <div class="frow">
     <div class="field"><label>Loan type</label><select id="lt${id}" onchange="calc()"><option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option></select></div>
-    <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()"></div></div>
+    <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()" min="0"></div></div>
   </div>`;
   document.getElementById('ll').appendChild(d);calc();
 }
 function rm(id){const el=document.getElementById(id);if(el)el.remove();calc();}
-function yearsToFreedom(pv,pmt,fv,annualRate){
-  if(pv>=fv) return 0;
-  const r=annualRate/100/12;
-  if(r===0){if(pmt<=0) return Infinity;return(fv-pv)/pmt/12;}
-  const denom=pv+pmt/r;
-  if(denom<=0) return Infinity;
-  const ratio=(fv+pmt/r)/denom;
-  if(ratio<=0) return Infinity;
-  const months=Math.log(ratio)/Math.log(1+r);
-  return months<=0?Infinity:months/12;
+
+/* ── Core: corpus growth with step-up SIP ── */
+function simulateStepUp(pv, initMonthly, years, annualReturnPct, stepUpPct){
+  const monthlyRate = annualReturnPct / 100 / 12;
+  let corpus = pv;
+  let monthly = initMonthly;
+  for(let yr=0; yr<years; yr++){
+    for(let mo=0; mo<12; mo++){
+      corpus = corpus * (1 + monthlyRate) + monthly;
+    }
+    monthly = monthly * (1 + stepUpPct/100);
+  }
+  return corpus;
 }
+
+/* ── Inflation-adjusted: years to freedom ── */
+// Binary search for years where corpus(y) >= inflTarget*(1+infl)^y + fixedTarget
+// inflTarget = living corpus (inflates over time)
+// fixedTarget = pre-inflated kids + nominal loans (constant)
+function yearsToFreedomInflAdj(pv, initMonthly, inflTarget, fixedTarget, annualReturnPct, stepUpPct, inflPct){
+  const totalNow = inflTarget + fixedTarget;
+  if(pv >= totalNow) return 0;
+  if(initMonthly <= 0 && pv <= 0) return Infinity;
+  const tAt = y => inflTarget * Math.pow(1+inflPct/100, y) + fixedTarget;
+  const c80 = simulateStepUp(pv, initMonthly, 80, annualReturnPct, stepUpPct);
+  if(c80 < tAt(80)) return Infinity;
+  let lo=0, hi=80;
+  for(let i=0;i<60;i++){
+    const mid=(lo+hi)/2;
+    const corpus = simulateStepUp(pv, initMonthly, mid, annualReturnPct, stepUpPct);
+    if(corpus >= tAt(mid)) hi=mid; else lo=mid;
+  }
+  return (lo+hi)/2;
+}
+
+/* ── Reverse: monthly savings needed (inflation-adjusted target) ── */
+function monthlyNeeded_flat(pv, fv, years, annualReturnPct){
+  if(years <= 0) return Infinity;
+  const r = annualReturnPct / 100 / 12;
+  const n = years * 12;
+  if(r === 0) return Math.max(0, (fv - pv) / n);
+  const fvFactor = Math.pow(1+r, n);
+  const pvGrown = pv * fvFactor;
+  const sipFactor = (fvFactor - 1) / r;
+  const needed = (fv - pvGrown) / sipFactor;
+  return needed <= 0 ? 0 : needed;
+}
+
+function monthlyNeeded_stepUp(pv, fv, years, annualReturnPct, stepUpPct){
+  if(years <= 0) return Infinity;
+  const pvGrown = simulateStepUp(pv, 0, years, annualReturnPct, stepUpPct);
+  if(pvGrown >= fv) return 0;
+  let lo=0, hi=fv/12;
+  for(let i=0;i<80;i++){
+    const mid=(lo+hi)/2;
+    const val=simulateStepUp(pv, mid, years, annualReturnPct, stepUpPct);
+    if(val >= fv) hi=mid; else lo=mid;
+  }
+  return (lo+hi)/2;
+}
+
+// inflTarget inflates, fixedTarget stays constant
+function monthlyNeededInflAdj(pv, inflTarget, fixedTarget, years, annualReturnPct, stepUpPct, inflPct){
+  const adjTotal = inflTarget * Math.pow(1+inflPct/100, years) + fixedTarget;
+  if(stepUpPct > 0){
+    return monthlyNeeded_stepUp(pv, adjTotal, years, annualReturnPct, stepUpPct);
+  }
+  return monthlyNeeded_flat(pv, adjTotal, years, annualReturnPct);
+}
+
+/* ── Validation ── */
+function getWarnings(){
+  const w=[];
+  const rawAge=v('age'), rawRet=v('ret'), rawTAge=v('target-age');
+  if(rawAge > 100) w.push('Age capped at 100.');
+  if(rawAge < 0) w.push('Age cannot be negative.');
+  if(rawRet > 50) w.push('Return rate capped at 50%.');
+  if(rawRet > 25 && rawRet <= 50) w.push('Return above 25% is very optimistic — verify your assumption.');
+  if(rawRet < 0) w.push('Return rate cannot be negative.');
+  if(rawTAge > 100) w.push('Target age capped at 100.');
+  ['exp','rent','divs','oth','saved','msave'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && parseFloat(el.value)<0) w.push(`${el.previousElementSibling?.textContent || id} cannot be negative (set to 0).`);
+  });
+  return w;
+}
+
+/* ── Chart ── */
+function colorAlpha(cssColor, alpha){
+  const m=cssColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+  if(m) return `rgba(${m[1]},${m[2]},${m[3]},${alpha})`;
+  if(cssColor.startsWith('#')){
+    let hex=cssColor;
+    if(hex.length===4) hex='#'+hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
+    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  return cssColor;
+}
+
+// inflTarget inflates each year, fixedTarget stays flat
+function drawChart(saved, msave, inflTarget, fixedTarget, ret, stepUpPctVal, useStepUp, yrs, inflPct, curAge){
+  const wrap=document.getElementById('chart-wrap');
+  const canvas=document.getElementById('growth-chart');
+  if(!wrap||!canvas) return;
+  if(!isFinite(yrs)||yrs<=0||yrs>80){wrap.style.display='none';return;}
+  wrap.style.display='block';
+
+  const dpr=window.devicePixelRatio||1;
+  const w=wrap.clientWidth-28;
+  const h=200;
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  canvas.style.width=w+'px'; canvas.style.height=h+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  const cs=getComputedStyle(document.documentElement);
+  const successClr=cs.getPropertyValue('--success').trim();
+  const dangerClr=cs.getPropertyValue('--danger').trim();
+  const mutedClr=cs.getPropertyValue('--muted').trim();
+  const borderClr=cs.getPropertyValue('--border').trim();
+
+  const pad={top:10,right:12,bottom:28,left:50};
+  const cw=w-pad.left-pad.right, ch=h-pad.top-pad.bottom;
+
+  // Data
+  const maxYears=Math.min(Math.max(Math.ceil(yrs*1.35),5),60);
+  const step=useStepUp?stepUpPctVal:0;
+  const pts=[];
+  let maxVal=0;
+  for(let yr=0;yr<=maxYears;yr++){
+    const corpus=simulateStepUp(saved,msave,yr,ret,step);
+    const tgt=inflTarget*Math.pow(1+inflPct/100,yr)+fixedTarget;
+    pts.push({year:yr,corpus,target:tgt});
+    maxVal=Math.max(maxVal,corpus,tgt);
+  }
+  if(maxVal===0){wrap.style.display='none';return;}
+
+  const xS=yr=>pad.left+(yr/maxYears)*cw;
+  const yS=val=>pad.top+ch-(val/maxVal)*ch;
+
+  ctx.clearRect(0,0,w,h);
+
+  // Grid
+  const gridN=4;
+  ctx.lineWidth=0.5;
+  ctx.strokeStyle=borderClr;
+  ctx.font='10px -apple-system,sans-serif';
+  ctx.fillStyle=mutedClr;
+  ctx.textAlign='right';
+  for(let i=0;i<=gridN;i++){
+    const y=pad.top+(ch/gridN)*i;
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(w-pad.right,y);ctx.stroke();
+    const val=maxVal*(1-i/gridN);
+    if(val>0) ctx.fillText('₹'+chartLabel(val),pad.left-6,y+3);
+  }
+
+  // X labels (age)
+  ctx.textAlign='center';
+  const xStep=maxYears<=10?1:maxYears<=20?2:maxYears<=40?5:10;
+  for(let yr=0;yr<=maxYears;yr+=xStep){
+    const label=curAge>0?Math.round(curAge+yr):'Y'+yr;
+    ctx.fillText(label,xS(yr),h-6);
+  }
+
+  // Target line (dashed)
+  ctx.strokeStyle=dangerClr;
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([6,4]);
+  ctx.beginPath();
+  pts.forEach((p,i)=>{
+    const x=xS(p.year),y=yS(p.target);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Corpus fill
+  const grad=ctx.createLinearGradient(0,pad.top,0,pad.top+ch);
+  grad.addColorStop(0,colorAlpha(successClr,0.25));
+  grad.addColorStop(1,colorAlpha(successClr,0.02));
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  ctx.moveTo(xS(0),pad.top+ch);
+  pts.forEach(p=>ctx.lineTo(xS(p.year),yS(p.corpus)));
+  ctx.lineTo(xS(maxYears),pad.top+ch);
+  ctx.closePath();
+  ctx.fill();
+
+  // Corpus line
+  ctx.strokeStyle=successClr;
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  pts.forEach((p,i)=>{
+    const x=xS(p.year),y=yS(p.corpus);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Intersection dot
+  const ix=xS(yrs), iy=yS(inflTarget*Math.pow(1+inflPct/100,yrs)+fixedTarget);
+  ctx.fillStyle=successClr;
+  ctx.beginPath();ctx.arc(ix,iy,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=colorAlpha(successClr,0.3);
+  ctx.beginPath();ctx.arc(ix,iy,9,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath();ctx.arc(ix,iy,2.5,0,Math.PI*2);ctx.fill();
+
+  // Label at intersection
+  ctx.fillStyle=mutedClr;
+  ctx.font='bold 10px -apple-system,sans-serif';
+  ctx.textAlign='center';
+  const intLabel=curAge>0?'Age '+Math.ceil(curAge+yrs):yrs.toFixed(1)+'y';
+  ctx.fillText(intLabel,ix,iy-14);
+}
+
+/* ── localStorage ── */
+function saveState(){
+  if(_loading) return;
+  try{
+    const state={
+      mode, multiplier, stepUpActive, stepUpPct, stepUpMode,
+      inputs:{},
+      kids:[], loans:[]
+    };
+    ['exp','rent','divs','oth','age','saved','msave','ret','target-age'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) state.inputs[id]=el.value;
+    });
+    document.querySelectorAll('.sc[id^="k"]').forEach(el=>{
+      const id=el.id.replace('k','');
+      state.kids.push({
+        edu:document.getElementById('ke'+id)?.value||'',
+        eduYrs:document.getElementById('key'+id)?.value||'',
+        mar:document.getElementById('km'+id)?.value||'',
+        marYrs:document.getElementById('kmy'+id)?.value||''
+      });
+    });
+    document.querySelectorAll('.sc[id^="l"]').forEach(el=>{
+      const id=el.id.replace('l','');
+      state.loans.push({
+        type:document.getElementById('lt'+id)?.value||'',
+        amt:document.getElementById('la'+id)?.value||''
+      });
+    });
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  }catch(e){}
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const s=JSON.parse(raw);
+    _loading=true;
+
+    // Mode
+    if(s.mode) setMode(s.mode);
+
+    // Multiplier
+    if(s.multiplier){
+      multiplier=s.multiplier;
+      document.querySelectorAll('#mult-presets .preset-btn').forEach(b=>{
+        b.classList.toggle('active', b.textContent.trim()===s.multiplier+'×');
+      });
+    }
+
+    // Simple inputs
+    if(s.inputs){
+      Object.entries(s.inputs).forEach(([id,val])=>{
+        const el=document.getElementById(id);
+        if(el && val!=='') el.value=val;
+      });
+    }
+
+    // Kids
+    if(s.kids && s.kids.length){
+      s.kids.forEach(kid=>{
+        kN++;const id=kN;
+        const d=document.createElement('div');d.className='sc';d.id='k'+id;
+        d.innerHTML=`<p class="slbl">Child ${id}</p>
+        <button class="rm" onclick="rm('k${id}')" title="Remove">✕</button>
+        <div class="frow">
+          <div class="field"><label>Education fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()" min="0" value="${kid.edu||''}"></div></div>
+          <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="key${id}" placeholder="10" oninput="calc()" min="0" max="50" value="${kid.eduYrs||''}"><span class="suf">yrs</span></div></div>
+        </div>
+        <div class="frow">
+          <div class="field"><label>Marriage fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()" min="0" value="${kid.mar||''}"></div></div>
+          <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="kmy${id}" placeholder="20" oninput="calc()" min="0" max="50" value="${kid.marYrs||''}"><span class="suf">yrs</span></div></div>
+        </div>
+        <p class="hint" style="margin-top:4px">Costs are auto-inflated at ${INFLATION}% to the target year.</p>`;
+        document.getElementById('kl').appendChild(d);
+      });
+    }
+
+    // Loans
+    if(s.loans && s.loans.length){
+      s.loans.forEach(loan=>{
+        lN++;const id=lN;
+        const d=document.createElement('div');d.className='sc';d.id='l'+id;
+        d.innerHTML=`<button class="rm" onclick="rm('l${id}')" title="Remove">✕</button>
+        <div class="frow">
+          <div class="field"><label>Loan type</label><select id="lt${id}" onchange="calc()"><option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option></select></div>
+          <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()" min="0" value="${loan.amt||''}"></div></div>
+        </div>`;
+        document.getElementById('ll').appendChild(d);
+        if(loan.type){
+          const sel=document.getElementById('lt'+id);
+          if(sel){for(let o of sel.options){if(o.text===loan.type){sel.value=loan.type;break;}}}
+        }
+      });
+    }
+
+    // Step-up
+    if(s.stepUpActive){
+      document.getElementById('stepup-chk').checked=true;
+      stepUpActive=true;
+      document.getElementById('stepup-lbl').className='stepup-toggle active';
+      document.getElementById('stepup-fields').className='stepup-fields show';
+    }
+    if(s.stepUpPct!=null) stepUpPct=s.stepUpPct;
+    if(s.stepUpMode!=null){
+      stepUpMode=s.stepUpMode;
+      if(s.stepUpMode==='custom'){
+        document.getElementById('stepup-custom-wrap').style.display='block';
+        document.getElementById('stepup-val').value=s.stepUpPct;
+      }
+      document.querySelectorAll('#stepup-presets .preset-btn').forEach(b=>{
+        b.classList.remove('active');
+        if(s.stepUpMode==='custom' && b.textContent==='Custom') b.classList.add('active');
+        else if(b.textContent===s.stepUpPct+'%') b.classList.add('active');
+      });
+    }
+
+    _loading=false;
+    calc();
+  }catch(e){
+    _loading=false;
+  }
+}
+
+/* ── Main calculation ── */
 function calc(){
-  const expRaw=v('exp');
+  const inflPct = INFLATION;
+
+  // Read & clamp all inputs
+  const expRaw=Math.max(0,v('exp'));
   const annExp=mode==='mo'?expRaw*12:expRaw;
-  const passAnn=(v('rent')*12)+v('divs')+v('oth');
+  const passAnn=Math.max(0,v('rent'))*12 + Math.max(0,v('divs')) + Math.max(0,v('oth'));
   const adjAnn=Math.max(0,annExp-passAnn);
-  const livingC=adjAnn*30;
-  let kidsT=0;
-  document.querySelectorAll('.sc[id^="k"]').forEach(el=>{const id=el.id.replace('k','');kidsT+=(parseFloat(document.getElementById('ke'+id)?.value)||0)+(parseFloat(document.getElementById('km'+id)?.value)||0);});
-  let loansT=0;const loanB=[];
-  document.querySelectorAll('.sc[id^="l"]').forEach(el=>{const id=el.id.replace('l','');const amt=parseFloat(document.getElementById('la'+id)?.value)||0;const type=document.getElementById('lt'+id)?.value||'Loan';if(amt>0){loansT+=amt;loanB.push({type,amt});}});
-  const target=livingC+kidsT+loansT;
-  const curAge=v('age'),saved=v('saved'),msave=v('msave'),ret=v('ret')||10;
+  const livingC=adjAnn*multiplier;
+
+  // Children: inflate each goal independently
+  let kidsTToday=0, kidsTInflated=0;
+  const kidDetails=[];
+  document.querySelectorAll('.sc[id^="k"]').forEach(el=>{
+    const id=el.id.replace('k','');
+    const edu=Math.max(0,parseFloat(document.getElementById('ke'+id)?.value)||0);
+    const mar=Math.max(0,parseFloat(document.getElementById('km'+id)?.value)||0);
+    const eduYrs=Math.max(0,parseFloat(document.getElementById('key'+id)?.value)||0);
+    const marYrs=Math.max(0,parseFloat(document.getElementById('kmy'+id)?.value)||0);
+    const eduInfl=eduYrs>0 ? edu*Math.pow(1+inflPct/100, eduYrs) : edu;
+    const marInfl=marYrs>0 ? mar*Math.pow(1+inflPct/100, marYrs) : mar;
+    kidsTToday+=edu+mar;
+    kidsTInflated+=eduInfl+marInfl;
+    if(edu>0||mar>0) kidDetails.push({num:id, edu, mar, eduYrs, marYrs, eduInfl, marInfl});
+  });
+
+  // Loans: nominal (no inflation)
+  let loansT=0; const loanB=[];
+  document.querySelectorAll('.sc[id^="l"]').forEach(el=>{
+    const id=el.id.replace('l','');
+    const amt=Math.max(0,parseFloat(document.getElementById('la'+id)?.value)||0);
+    const type=document.getElementById('lt'+id)?.value||'Loan';
+    if(amt>0){loansT+=amt;loanB.push({type,amt});}
+  });
+
+  // Split target: inflating part vs fixed part
+  const inflatingTarget=livingC;                      // inflates over timeline
+  const fixedTarget=kidsTInflated+loansT;              // already at final values
+  const target=inflatingTarget+fixedTarget;            // total for display
+
+  const curAge=clamp(v('age'),0,100);
+  const saved=Math.max(0,v('saved'));
+  const msave=Math.max(0,v('msave'));
+  const ret=clamp(v('ret')||10,0,50);
+  const targetAge=clamp(v('target-age'),0,100);
+  const useStepUp = stepUpActive && stepUpPct > 0;
+
+  // Summaries
   document.getElementById('s-exp').textContent=annExp>0?inrs(annExp/12)+'/mo':'';
   document.getElementById('s-pass').textContent=passAnn>0?'−'+inrs(passAnn)+'/yr':'';
-  document.getElementById('s-kids').textContent=kidsT>0?inrs(kidsT):'';
+  document.getElementById('s-kids').textContent=kidsTInflated>0?inrs(kidsTInflated):'';
   document.getElementById('s-loans').textContent=loansT>0?inrs(loansT):'';
   document.getElementById('s-prog').textContent=saved>0?inrs(saved)+' saved':'';
+
+  // Validation warnings
+  const warns=getWarnings();
+
+  // Target age reverse calculation (inflation-adjusted)
+  const trw=document.getElementById('target-result-wrap');
+  if(annExp>0 && targetAge>0 && curAge>0 && targetAge>curAge){
+    const yrsToTarget=targetAge-curAge;
+    const adjTargetForAge=inflatingTarget*Math.pow(1+inflPct/100,yrsToTarget)+fixedTarget;
+    let needed, stepNote='';
+    if(useStepUp){
+      needed=monthlyNeededInflAdj(saved,inflatingTarget,fixedTarget,yrsToTarget,ret,stepUpPct,inflPct);
+      stepNote=` (starting amount, grows ${stepUpPct}%/yr)`;
+    } else {
+      needed=monthlyNeededInflAdj(saved,inflatingTarget,fixedTarget,yrsToTarget,ret,0,inflPct);
+    }
+    if(needed<=0 || saved>=adjTargetForAge){
+      trw.innerHTML=`<div class="target-result g"><div class="trl">To be free by age ${targetAge}</div><div class="trv">Already there! 🎉</div><div class="trsub">Your current corpus meets the inflation-adjusted target.</div></div>`;
+    } else if(!isFinite(needed) || needed>100000000){
+      trw.innerHTML=`<div class="target-result"><div class="trl">To be free by age ${targetAge}</div><div class="trv" style="color:var(--danger);font-size:14px">Unreachable with these assumptions</div><div class="trsub">Try a higher return rate or a later target age.</div></div>`;
+    } else {
+      const yr2=useStepUp?needed*(1+stepUpPct/100):needed;
+      trw.innerHTML=`<div class="target-result p">
+        <div class="trl">Save per month to be free by age ${targetAge} (${yrsToTarget} yrs away)</div>
+        <div class="trv">${inr(needed)}/mo${stepNote}</div>
+        ${useStepUp?`<div class="trsub" style="margin-top:4px">Year 2: ${inr(yr2)}/mo · grows at ${stepUpPct}%/yr</div>`:`<div class="trsub">Flat monthly investment, ${ret}% annual return</div>`}
+        <div class="trsub" style="margin-top:4px;color:var(--hint)">Inflation-adjusted target: ${inr(adjTargetForAge)}</div>
+      </div>`;
+    }
+  } else if(annExp>0 && targetAge>0 && curAge>0 && targetAge<=curAge){
+    trw.innerHTML=`<div class="target-result"><div class="trl">Target age</div><div class="trv" style="font-size:14px;color:var(--danger)">Must be greater than current age (${curAge})</div></div>`;
+  } else {
+    trw.innerHTML='';
+  }
+
+  // Results
   const rbd=document.getElementById('rbd');
   if(annExp===0){rbd.innerHTML='<div class="empty">Enter your monthly expenses above to get started.</div>';return;}
+
   const pct=target>0?Math.min(100,Math.round(saved/target*100)):0;
   let mHtml=`<div class="metrics"><div class="met"><div class="ml">Annual expenses</div><div class="mv">${inr(annExp)}</div></div>`;
   if(passAnn>0) mHtml+=`<div class="met"><div class="ml">Passive income / yr</div><div class="mv g">${inr(passAnn)}</div></div><div class="met"><div class="ml">Adjusted expenses / yr</div><div class="mv">${inr(adjAnn)}</div></div>`;
   mHtml+='</div>';
-  let bHtml=`<div class="brow"><span class="bl">Living corpus (${inr(adjAnn)} × 30)</span><span class="bv">${inr(livingC)}</span></div>`;
-  if(kidsT>0) bHtml+=`<div class="brow"><span class="bl">Children's fund</span><span class="bv">${inr(kidsT)}</span></div>`;
-  loanB.forEach(lb=>{bHtml+=`<div class="brow"><span class="bl">${lb.type}</span><span class="bv">${inr(lb.amt)}</span></div>`;});
+
+  // Warnings
+  let warnHtml='';
+  if(warns.length>0){
+    warnHtml=`<div class="warn-bar">${warns.map(w=>'<span>⚠ '+w+'</span>').join('')}</div>`;
+  }
+
+  // Breakdown
+  let bHtml=`<div class="brow"><span class="bl">Living corpus (${inr(adjAnn)} × ${multiplier})</span><span class="bv">${inr(livingC)}</span></div>`;
+  kidDetails.forEach(k=>{
+    if(k.edu>0){
+      const note=k.eduYrs>0?' <span style="font-size:11px;color:var(--hint)">('+inrs(k.edu)+' → '+k.eduYrs+'yr @'+inflPct+'%)</span>':'';
+      bHtml+=`<div class="brow"><span class="bl">Child ${k.num} — Education${note}</span><span class="bv">${inr(k.eduInfl)}</span></div>`;
+    }
+    if(k.mar>0){
+      const note=k.marYrs>0?' <span style="font-size:11px;color:var(--hint)">('+inrs(k.mar)+' → '+k.marYrs+'yr @'+inflPct+'%)</span>':'';
+      bHtml+=`<div class="brow"><span class="bl">Child ${k.num} — Marriage${note}</span><span class="bv">${inr(k.marInfl)}</span></div>`;
+    }
+  });
+  loanB.forEach(lb=>{bHtml+=`<div class="brow"><span class="bl">${lb.type} <span style="font-size:11px;color:var(--hint)">(face value)</span></span><span class="bv">${inr(lb.amt)}</span></div>`;});
   bHtml+=`<div class="brow tr"><span class="bl">Total corpus needed</span><span class="bv">${inr(target)}</span></div>`;
+
   let timeHtml='';
+  let chartHtml='';
   if(saved>0||msave>0){
-    const yrs=yearsToFreedom(saved,msave,target,ret);
+    // Inflation-adjusted timeline
+    const effStepUp=useStepUp?stepUpPct:0;
+    const yrs=yearsToFreedomInflAdj(saved,msave,inflatingTarget,fixedTarget,ret,effStepUp,inflPct);
+    const totalInflated=isFinite(yrs)?inflatingTarget*Math.pow(1+inflPct/100,yrs)+fixedTarget:target;
     const freeAge=curAge>0&&yrs<Infinity?curAge+yrs:null;
     const progBar=`<div class="prog-wrap"><div class="prog-label"><span>${pct}% of corpus reached</span><span>${inr(saved)} of ${inr(target)}</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;
     let tb='';
     if(saved>=target){
       tb=`<div class="free-banner"><p>You are already financially free!</p><p>Your saved corpus meets or exceeds the target.</p></div>`;
-    } else if(yrs===Infinity||yrs>100){
+    } else if(yrs===Infinity||yrs>80){
       tb=`<div class="metrics"><div class="met"><div class="ml">Status</div><div class="mv" style="font-size:13px;color:var(--danger)">Increase savings or return rate</div></div></div>`;
     } else {
-      const inflTarget=target*Math.pow(1.06,yrs);
+      let stepDetail='';
+      if(useStepUp && msave>0){
+        const yr5=msave*Math.pow(1+stepUpPct/100, 4);
+        const yr10=msave*Math.pow(1+stepUpPct/100, 9);
+        stepDetail=`<div class="brow" style="border-bottom:0.5px solid var(--border);padding:8px 0;font-size:12px"><span class="bl">Monthly savings — Year 5</span><span class="bv" style="color:var(--accent)">${inr(yr5)}/mo</span></div>
+        <div class="brow" style="padding:8px 0;font-size:12px;border-bottom:none"><span class="bl">Monthly savings — Year 10</span><span class="bv" style="color:var(--accent)">${inr(yr10)}/mo</span></div>`;
+      }
       tb=`<div class="metrics">
         <div class="met"><div class="ml">Years to freedom</div><div class="mv b">${yrs.toFixed(1)} yrs</div></div>
         ${freeAge?`<div class="met"><div class="ml">Free at age</div><div class="mv g">${Math.ceil(freeAge)}</div></div>`:''}
-        ${msave>0?`<div class="met"><div class="ml">Assumed return</div><div class="mv">${ret}% / yr</div></div>`:''}
+        ${msave>0?`<div class="met"><div class="ml">Return</div><div class="mv">${ret}% / yr</div></div>`:''}
+        ${useStepUp?`<div class="met"><div class="ml">Step-up</div><div class="mv p">${stepUpPct}% / yr</div></div>`:''}
       </div>
-      <p class="infl-note">At 6% annual inflation, ${inr(target)} today equals <strong>${inr(inflTarget)}</strong> in ${Math.ceil(yrs)} years. Consider targeting the nominal figure for a more conservative plan.</p>`;
+      ${stepDetail?`<div class="divider" style="margin:10px 0"></div><p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">Step-up savings projection</p>${stepDetail}`:''}
+      <p class="infl-note">📊 Inflation-adjusted total at year ${Math.ceil(yrs)}: <strong>${inr(totalInflated)}</strong>. Living expenses inflate at ${inflPct}%/yr; children's costs pre-inflated to their target year; loans at face value.</p>`;
+
+      // Chart
+      chartHtml=`<div class="chart-wrap" id="chart-wrap">
+        <div class="chart-hd">
+          <span class="chart-title">Corpus Growth vs Inflation-Adjusted Target</span>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="ldot solid"></span>Corpus</span>
+            <span class="legend-item"><span class="ldot dashed"></span>Target</span>
+          </div>
+        </div>
+        <canvas id="growth-chart"></canvas>
+      </div>`;
     }
-    timeHtml=`<div class="divider"></div><p class="timeline-hd">Timeline</p>${progBar}${tb}`;
+    timeHtml=`<div class="divider"></div><p class="timeline-hd">Timeline</p>${progBar}${tb}${chartHtml}`;
+
+    // Draw chart after DOM update
+    setTimeout(()=>{
+      if(yrs>0 && yrs<Infinity && yrs<=80){
+        drawChart(saved,msave,inflatingTarget,fixedTarget,ret,stepUpPct,useStepUp,yrs,inflPct,curAge);
+      }
+    },0);
   }
-  rbd.innerHTML=mHtml+bHtml+timeHtml;
+
+  rbd.innerHTML=warnHtml+mHtml+bHtml+timeHtml;
+
+  // Re-trigger chart draw after innerHTML (canvas needs to be in DOM)
+  if(saved>0||msave>0){
+    const effStepUp2=useStepUp?stepUpPct:0;
+    const yrs2=yearsToFreedomInflAdj(saved,msave,inflatingTarget,fixedTarget,ret,effStepUp2,inflPct);
+    if(yrs2>0 && isFinite(yrs2) && yrs2<=80){
+      requestAnimationFrame(()=>drawChart(saved,msave,inflatingTarget,fixedTarget,ret,stepUpPct,useStepUp,yrs2,inflPct,curAge));
+    }
+  }
+
+  saveState();
 }
+
+/* ── Resize handler for chart ── */
+let _resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(_resizeTimer);
+  _resizeTimer=setTimeout(calc,150);
+});
+
+/* ── Init ── */
+window.addEventListener('DOMContentLoaded',()=>{
+  loadState();
+  if(!localStorage.getItem(STORAGE_KEY)) calc();
+});
 </script>
 </body>
 </html>
