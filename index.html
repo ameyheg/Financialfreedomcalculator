@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freedom Corpus Calculator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<style>
+  :root{
+    --bg:#f6f5f2;--surface:#ffffff;--surface2:#f0efe9;
+    --border:rgba(0,0,0,0.1);--border-strong:rgba(0,0,0,0.2);
+    --text:#1a1a18;--text-muted:#6b6b60;--text-hint:#a0a090;
+    --accent:#1d6a45;--accent-bg:#eaf3de;--accent-text:#27500a;
+    --info-bg:#e6f1fb;--info-text:#0c447c;
+    --success-text:#1d6a45;
+    --radius-md:8px;--radius-lg:12px;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#0f0f0d;--surface:#1a1a16;--surface2:#222220;
+      --border:rgba(255,255,255,0.1);--border-strong:rgba(255,255,255,0.2);
+      --text:#f0ede6;--text-muted:#8a8878;--text-hint:#55554a;
+      --accent:#4caf7d;--accent-bg:#0a2e1a;--accent-text:#81c995;
+      --info-bg:#082040;--info-text:#85b7eb;
+      --success-text:#4caf7d;
+    }
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:0 0 60px}
+  .wrap{max-width:680px;margin:0 auto;padding:40px 16px}
+  h1{font-size:26px;font-weight:600;margin-bottom:4px}
+  .sub{font-size:14px;color:var(--text-muted);margin-bottom:24px}
+  .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden}
+  .card-hd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:0.5px solid var(--border)}
+  .badge{font-size:11px;font-weight:600;color:var(--info-text);background:var(--info-bg);border-radius:var(--radius-md);padding:2px 8px}
+  .card-title{font-size:15px;font-weight:500;flex:1}
+  .card-sum{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+  .card-bd{padding:16px}
+  .toggle{display:inline-flex;background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:3px;margin-bottom:14px}
+  .toggle button{padding:5px 14px;border:none;background:none;font-size:12px;font-weight:500;color:var(--text-muted);border-radius:6px;cursor:pointer;transition:.15s}
+  .toggle button.on{background:var(--surface);border:0.5px solid var(--border-strong);color:var(--text)}
+  .frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:12px}
+  .frow:last-child{margin-bottom:0}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:12px;color:var(--text-muted)}
+  .iw{position:relative}
+  .iw span{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text-muted);pointer-events:none;z-index:1}
+  .iw input{padding-left:22px!important}
+  input[type=number],select{width:100%;padding:8px 10px;font-size:14px;background:var(--surface2);border:0.5px solid var(--border-strong);border-radius:var(--radius-md);color:var(--text);outline:none;-moz-appearance:textfield;box-sizing:border-box;font-family:inherit;transition:.15s}
+  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(29,106,69,.12)}
+  .hint{font-size:12px;color:var(--text-hint);margin-top:6px;line-height:1.5}
+  .add-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px;margin-top:10px;border:1px dashed var(--border-strong);background:none;border-radius:var(--radius-md);font-size:13px;color:var(--text-muted);cursor:pointer;transition:.15s;font-family:inherit}
+  .add-btn:hover{background:var(--surface2);color:var(--text)}
+  .sub-card{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:12px;margin-bottom:8px;position:relative}
+  .sub-card:last-of-type{margin-bottom:0}
+  .sub-lbl{font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+  .rm{position:absolute;top:10px;right:10px;width:24px;height:24px;border:0.5px solid var(--border-strong);background:none;border-radius:6px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.15s}
+  .rm:hover{background:#ffeaea;border-color:#f09595;color:#a32d2d}
+  .result-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  .result-hd{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:0.5px solid var(--border);background:var(--accent-bg)}
+  .result-hd .card-title{color:var(--accent-text)}
+  .result-bd{padding:20px}
+  .total-amt{font-size:34px;font-weight:600;color:var(--text);line-height:1;margin-bottom:4px}
+  .total-note{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:16px}
+  .metric{background:var(--surface2);border-radius:var(--radius-md);padding:10px 12px}
+  .m-lbl{font-size:11px;color:var(--text-muted);margin-bottom:3px}
+  .m-val{font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+  .m-val.green{color:var(--success-text)}
+  .brow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;gap:8px}
+  .brow:last-child{border-bottom:none}
+  .bl{color:var(--text-muted)}
+  .bv{font-variant-numeric:tabular-nums;color:var(--text)}
+  .brow.total-row .bl{font-weight:600;color:var(--text)}
+  .brow.total-row .bv{font-size:15px;font-weight:600;color:var(--accent-text)}
+  .empty{text-align:center;padding:36px 16px;color:var(--text-hint);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Freedom corpus calculator</h1>
+  <p class="sub">How much do you need to retire from active income?</p>
+
+  <!-- EXPENSES -->
+  <div class="card">
+    <div class="card-hd">
+      <span class="badge">01</span>
+      <span class="card-title">Monthly expenses</span>
+      <span class="card-sum" id="sum-exp"></span>
+    </div>
+    <div class="card-bd">
+      <div class="toggle">
+        <button class="on" id="btn-mo" onclick="setMode('mo')">Monthly</button>
+        <button id="btn-yr" onclick="setMode('yr')">Annual</button>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label id="exp-lbl">Monthly expenses</label>
+          <div class="iw"><span>₹</span><input type="number" id="expenses" placeholder="50000" oninput="calc()" step="1000"></div>
+        </div>
+      </div>
+      <p class="hint">Total household spend — rent/EMI, food, transport, utilities, subscriptions, lifestyle, etc.</p>
+    </div>
+  </div>
+
+  <!-- PASSIVE INCOME -->
+  <div class="card">
+    <div class="card-hd">
+      <span class="badge">02</span>
+      <span class="card-title">Passive income</span>
+      <span class="card-sum" id="sum-pass"></span>
+    </div>
+    <div class="card-bd">
+      <div class="frow">
+        <div class="field">
+          <label>Rent income / month</label>
+          <div class="iw"><span>₹</span><input type="number" id="rent" placeholder="0" oninput="calc()"></div>
+        </div>
+        <div class="field">
+          <label>Dividends / year</label>
+          <div class="iw"><span>₹</span><input type="number" id="divs" placeholder="0" oninput="calc()"></div>
+        </div>
+        <div class="field">
+          <label>Other passive / year</label>
+          <div class="iw"><span>₹</span><input type="number" id="other" placeholder="0" oninput="calc()"></div>
+        </div>
+      </div>
+      <p class="hint">Passive income reduces the corpus you need. Only include income you'll reliably have post-retirement.</p>
+    </div>
+  </div>
+
+  <!-- KIDS -->
+  <div class="card">
+    <div class="card-hd">
+      <span class="badge">03</span>
+      <span class="card-title">Children's future</span>
+      <span class="card-sum" id="sum-kids"></span>
+    </div>
+    <div class="card-bd">
+      <div id="kids-list"></div>
+      <button class="add-btn" onclick="addKid()">＋ Add a child</button>
+      <p class="hint" style="margin-top:10px">Add higher education and/or marriage fund per child.</p>
+    </div>
+  </div>
+
+  <!-- LOANS -->
+  <div class="card">
+    <div class="card-hd">
+      <span class="badge">04</span>
+      <span class="card-title">Outstanding loans</span>
+      <span class="card-sum" id="sum-loans"></span>
+    </div>
+    <div class="card-bd">
+      <div id="loans-list"></div>
+      <button class="add-btn" onclick="addLoan()">＋ Add a loan</button>
+      <p class="hint" style="margin-top:10px">Enter the current outstanding principal balance of each loan.</p>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card">
+    <div class="result-hd">
+      <span class="card-title">🎯 Your freedom corpus</span>
+    </div>
+    <div class="result-bd" id="result-body">
+      <div class="empty">Enter your monthly expenses above to calculate your freedom corpus.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let mode='mo',kidN=0,loanN=0;
+
+function setMode(m){
+  mode=m;
+  document.getElementById('btn-mo').className=m==='mo'?'on':'';
+  document.getElementById('btn-yr').className=m==='yr'?'on':'';
+  document.getElementById('exp-lbl').textContent=m==='mo'?'Monthly expenses':'Annual expenses';
+  document.getElementById('expenses').placeholder=m==='mo'?'50000':'600000';
+  calc();
+}
+
+function inr(n,full){
+  n=Math.round(n);
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+(full?' Cr':'Cr');
+  if(n>=100000) return '₹'+(n/100000).toFixed(full?2:1)+(full?' L':'L');
+  return '₹'+n.toLocaleString('en-IN');
+}
+
+function v(id){return parseFloat(document.getElementById(id)?.value)||0;}
+
+function addKid(){
+  kidN++;const id=kidN;
+  const d=document.createElement('div');
+  d.className='sub-card';d.id='kid-'+id;
+  d.innerHTML=`<p class="sub-lbl">Child ${id}</p>
+    <button class="rm" onclick="rm('kid-${id}')" title="Remove">✕</button>
+    <div class="frow">
+      <div class="field"><label>Higher education fund</label><div class="iw"><span>₹</span><input type="number" id="ke-${id}" placeholder="2000000" oninput="calc()"></div></div>
+      <div class="field"><label>Marriage fund (optional)</label><div class="iw"><span>₹</span><input type="number" id="km-${id}" placeholder="1500000" oninput="calc()"></div></div>
+    </div>`;
+  document.getElementById('kids-list').appendChild(d);calc();
+}
+
+function addLoan(){
+  loanN++;const id=loanN;
+  const d=document.createElement('div');
+  d.className='sub-card';d.id='loan-'+id;
+  d.innerHTML=`<button class="rm" onclick="rm('loan-${id}')" title="Remove">✕</button>
+    <div class="frow">
+      <div class="field"><label>Loan type</label>
+        <select id="lt-${id}" onchange="calc()">
+          <option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Outstanding balance</label><div class="iw"><span>₹</span><input type="number" id="la-${id}" placeholder="5000000" oninput="calc()"></div></div>
+    </div>`;
+  document.getElementById('loans-list').appendChild(d);calc();
+}
+
+function rm(id){const el=document.getElementById(id);if(el)el.remove();calc();}
+
+function calc(){
+  const expRaw=v('expenses');
+  const annualExp=mode==='mo'?expRaw*12:expRaw;
+  const passAnnual=(v('rent')*12)+v('divs')+v('other');
+  const adjAnnual=Math.max(0,annualExp-passAnnual);
+  const livingCorpus=adjAnnual*30;
+
+  let kidsTotal=0;
+  document.querySelectorAll('.sub-card[id^="kid-"]').forEach(el=>{
+    const id=el.id.replace('kid-','');
+    kidsTotal+=(parseFloat(document.getElementById('ke-'+id)?.value)||0)+(parseFloat(document.getElementById('km-'+id)?.value)||0);
+  });
+
+  let loansTotal=0;const loanBreaks=[];
+  document.querySelectorAll('.sub-card[id^="loan-"]').forEach(el=>{
+    const id=el.id.replace('loan-','');
+    const amt=parseFloat(document.getElementById('la-'+id)?.value)||0;
+    const type=document.getElementById('lt-'+id)?.value||'Loan';
+    if(amt>0){loansTotal+=amt;loanBreaks.push({type,amt});}
+  });
+
+  const total=livingCorpus+kidsTotal+loansTotal;
+
+  document.getElementById('sum-exp').textContent=annualExp>0?inr(annualExp/12)+'/mo':'';
+  document.getElementById('sum-pass').textContent=passAnnual>0?'−'+inr(passAnnual)+'/yr':'';
+  document.getElementById('sum-kids').textContent=kidsTotal>0?inr(kidsTotal,true):'';
+  document.getElementById('sum-loans').textContent=loansTotal>0?inr(loansTotal,true):'';
+
+  const rb=document.getElementById('result-body');
+  if(annualExp===0){
+    rb.innerHTML='<div class="empty">Enter your monthly expenses above to calculate your freedom corpus.</div>';
+    return;
+  }
+
+  let mHtml=`<div class="metrics">
+    <div class="metric"><div class="m-lbl">Annual expenses</div><div class="m-val">${inr(annualExp,true)}</div></div>`;
+  if(passAnnual>0){
+    mHtml+=`<div class="metric"><div class="m-lbl">Passive income / yr</div><div class="m-val green">${inr(passAnnual,true)}</div></div>
+    <div class="metric"><div class="m-lbl">Adjusted expenses / yr</div><div class="m-val">${inr(adjAnnual,true)}</div></div>`;
+  }
+  mHtml+='</div>';
+
+  let bHtml=`<div class="brow">
+    <span class="bl">Living corpus (${inr(adjAnnual,true)} × 30)</span>
+    <span class="bv">${inr(livingCorpus,true)}</span>
+  </div>`;
+
+  if(kidsTotal>0) bHtml+=`<div class="brow"><span class="bl">Children's fund</span><span class="bv">${inr(kidsTotal,true)}</span></div>`;
+  
+  loanBreaks.forEach(lb=>{
+    bHtml+=`<div class="brow"><span class="bl">${lb.type}</span><span class="bv">${inr(lb.amt,true)}</span></div>`;
+  });
+
+  bHtml+=`<div class="brow total-row"><span class="bl">Total corpus needed</span><span class="bv">${inr(total,true)}</span></div>`;
+
+  rb.innerHTML=`<div class="total-amt">${inr(total,true)}</div>
+    <p class="total-note">based on the 30× rule · target before age 60</p>
+    ${mHtml}${bHtml}`;
+}
+</script>
+</body>
+</html>
