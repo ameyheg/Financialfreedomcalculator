@@ -113,6 +113,19 @@
   .ldot.dashed{border-top:2px dashed var(--danger)}
   #growth-chart{width:100%;display:block}
 
+  /* Inflation-linked toggle */
+  .infl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .infl-row:last-child{margin-bottom:0}
+  .infl-label{display:flex;flex-direction:column;gap:3px}
+  .infl-label span{font-size:12px;color:var(--muted)}
+  .infl-label small{font-size:11px;color:var(--hint)}
+  .infl-iw{position:relative;flex-shrink:0}
+  .infl-iw input[type=number]{width:90px;padding:7px 26px 7px 10px;font-size:13px}
+  .infl-iw .suf{position:absolute;top:50%;transform:translateY(-50%);right:8px;font-size:12px;color:var(--muted);pointer-events:none}
+  /* Kid card sub-sections */
+  .kid-section{border-top:0.5px solid var(--border);margin-top:10px;padding-top:10px}
+  .kid-section:first-child{border-top:none;margin-top:0;padding-top:0}
+  .kid-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:8px}
   /* Validation warnings */
   .warn-bar{background:var(--danger-bg);border:0.5px solid rgba(163,45,45,.25);border-radius:var(--r-md);padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--danger);line-height:1.5}
   .warn-bar span{display:block}
@@ -128,7 +141,7 @@
     <div class="cbd">
       <div class="toggle"><button class="on" id="bmo" onclick="setMode('mo')">Monthly</button><button id="byr" onclick="setMode('yr')">Annual</button></div>
       <div class="frow"><div class="field"><label id="elbl">Monthly expenses</label><div class="iw"><span class="pre">₹</span><input type="number" id="exp" placeholder="50000" oninput="calc()" step="1000" min="0"></div></div></div>
-      <p class="hint">Total household spend — rent/EMI, food, transport, utilities, lifestyle, etc.</p>
+      <p class="hint">Total household spend — food, transport, utilities, rent, lifestyle, etc. <strong>Do not include loan EMIs</strong> — enter loan outstanding balances in section 04 instead. On freedom day you clear all loans from the corpus; EMIs drop to zero.</p>
 
       <p class="section-label" style="margin-top:14px">Corpus multiplier</p>
       <div class="mult-presets" id="mult-presets">
@@ -149,7 +162,7 @@
         <div class="field"><label>Dividends / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="divs" placeholder="0" oninput="calc()" min="0"></div></div>
         <div class="field"><label>Other passive / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="oth" placeholder="0" oninput="calc()" min="0"></div></div>
       </div>
-      <p class="hint">Only include income you'll reliably have post-retirement.</p>
+      <p class="hint">Only include income you're confident will last through retirement. Rental income typically grows with inflation and is the safest to include in full. Fixed income like FD interest or a pension erodes over time — include it, but be conservative with the amount.</p>
     </div>
   </div>
 
@@ -166,7 +179,7 @@
     <div class="cbd">
       <div id="ll"></div>
       <button class="add-btn" onclick="addLoan()">＋ Add a loan</button>
-      <p class="hint" style="margin-top:8px">Loans are treated at face value (no inflation applied).</p>
+      <p class="hint" style="margin-top:8px"><strong>Model A — clear on freedom day.</strong> Enter the outstanding principal. The full balance is added to your corpus target so you can pay it off on day one of retirement. Since EMIs disappear, keep them out of your monthly expenses above.</p>
     </div>
   </div>
 
@@ -181,6 +194,7 @@
         <div class="field"><label>Monthly savings</label><div class="iw"><span class="pre">₹</span><input type="number" id="msave" placeholder="30000" oninput="calc()" min="0"></div></div>
         <div class="field"><label>Expected annual return</label><div class="iw sw"><input type="number" id="ret" placeholder="10" oninput="calc()" min="0" max="50" step="0.5"><span class="suf">%</span></div></div>
       </div>
+      <p class="hint">This is your <strong>pre-retirement return</strong> — what your investments earn while building the corpus (equity-heavy portfolios typically return 10–12%). Post-retirement returns are already handled by the corpus multiplier above: at 30×, your corpus is sized to safely sustain withdrawals indefinitely without you needing to manage it.</p>
 
       <!-- Step-up investment -->
       <div class="stepup-box">
@@ -205,7 +219,7 @@
         </div>
       </div>
 
-      <p class="hint" style="margin-top:8px">Timeline uses 6% inflation. Living expenses inflate over the timeline; children's costs are pre-inflated to their target year; loans stay at face value.</p>
+      <p class="hint" style="margin-top:8px">Timeline uses 6% general inflation. Living expenses inflate over the timeline; children's costs are inflated at their own rate to the target year; loans at face value (no inflation).</p>
     </div>
   </div>
 
@@ -315,18 +329,30 @@ function clamp(val,lo,hi){return Math.max(lo,Math.min(hi,val));}
 function addKid(){
   kN++;const id=kN;
   const d=document.createElement('div');d.className='sc';d.id='k'+id;
-  d.innerHTML=`<p class="slbl">Child ${id}</p>
-  <button class="rm" onclick="rm('k${id}')" title="Remove">✕</button>
-  <div class="frow">
-    <div class="field"><label>Education fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()" min="0"></div></div>
-    <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="key${id}" placeholder="10" oninput="calc()" min="0" max="50"><span class="suf">yrs</span></div></div>
-  </div>
-  <div class="frow">
-    <div class="field"><label>Marriage fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()" min="0"></div></div>
-    <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="kmy${id}" placeholder="20" oninput="calc()" min="0" max="50"><span class="suf">yrs</span></div></div>
-  </div>
-  <p class="hint" style="margin-top:4px">Costs are auto-inflated at ${INFLATION}% to the target year.</p>`;
+  d.innerHTML=kidHtml(id,'','','','','','');
   document.getElementById('kl').appendChild(d);calc();
+}
+function kidHtml(id,edu,eduYrs,eduInfl,mar,marYrs,marInfl){
+  return `<p class="slbl">Child ${id}</p>
+  <button class="rm" onclick="rm('k${id}')" title="Remove">✕</button>
+  <div class="kid-section">
+    <p class="kid-section-label">🎓 Education</p>
+    <div class="frow">
+      <div class="field"><label>Today's cost (₹)</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()" min="0" value="${edu}"></div></div>
+      <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="key${id}" placeholder="10" oninput="calc()" min="0" max="50" value="${eduYrs}"><span class="suf">yrs</span></div></div>
+      <div class="field"><label>Inflation rate</label><div class="iw sw"><input type="number" id="kei${id}" placeholder="10" oninput="calc()" min="0" max="40" step="0.5" value="${eduInfl}"><span class="suf">%</span></div></div>
+    </div>
+    <p class="hint" style="margin-top:2px">Typical: <strong>8–10%</strong> for private engineering/medical; <strong>10–12%</strong> for top private colleges &amp; coaching; <strong>6–8%</strong> for government colleges. Defaults to 10% if left blank.</p>
+  </div>
+  <div class="kid-section">
+    <p class="kid-section-label">💍 Marriage</p>
+    <div class="frow">
+      <div class="field"><label>Today's cost (₹)</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()" min="0" value="${mar}"></div></div>
+      <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="kmy${id}" placeholder="20" oninput="calc()" min="0" max="50" value="${marYrs}"><span class="suf">yrs</span></div></div>
+      <div class="field"><label>Inflation rate</label><div class="iw sw"><input type="number" id="kmi${id}" placeholder="8" oninput="calc()" min="0" max="40" step="0.5" value="${marInfl}"><span class="suf">%</span></div></div>
+    </div>
+    <p class="hint" style="margin-top:2px">Venue, catering &amp; jewellery have risen faster than general inflation. Typical: <strong>7–9%</strong> for mid-range weddings; <strong>9–12%</strong> for destination/large weddings. Defaults to 8% if left blank.</p>
+  </div>`;
 }
 function addLoan(){
   lN++;const id=lN;
@@ -573,8 +599,10 @@ function saveState(){
       state.kids.push({
         edu:document.getElementById('ke'+id)?.value||'',
         eduYrs:document.getElementById('key'+id)?.value||'',
+        eduInfl:document.getElementById('kei'+id)?.value||'',
         mar:document.getElementById('km'+id)?.value||'',
-        marYrs:document.getElementById('kmy'+id)?.value||''
+        marYrs:document.getElementById('kmy'+id)?.value||'',
+        marInfl:document.getElementById('kmi'+id)?.value||''
       });
     });
     document.querySelectorAll('.sc[id^="l"]').forEach(el=>{
@@ -619,17 +647,7 @@ function loadState(){
       s.kids.forEach(kid=>{
         kN++;const id=kN;
         const d=document.createElement('div');d.className='sc';d.id='k'+id;
-        d.innerHTML=`<p class="slbl">Child ${id}</p>
-        <button class="rm" onclick="rm('k${id}')" title="Remove">✕</button>
-        <div class="frow">
-          <div class="field"><label>Education fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()" min="0" value="${kid.edu||''}"></div></div>
-          <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="key${id}" placeholder="10" oninput="calc()" min="0" max="50" value="${kid.eduYrs||''}"><span class="suf">yrs</span></div></div>
-        </div>
-        <div class="frow">
-          <div class="field"><label>Marriage fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()" min="0" value="${kid.mar||''}"></div></div>
-          <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="kmy${id}" placeholder="20" oninput="calc()" min="0" max="50" value="${kid.marYrs||''}"><span class="suf">yrs</span></div></div>
-        </div>
-        <p class="hint" style="margin-top:4px">Costs are auto-inflated at ${INFLATION}% to the target year.</p>`;
+        d.innerHTML=kidHtml(id,kid.edu||'',kid.eduYrs||'',kid.eduInfl||'',kid.mar||'',kid.marYrs||'',kid.marInfl||'');
         document.getElementById('kl').appendChild(d);
       });
     }
@@ -691,7 +709,8 @@ function calc(){
   const adjAnn=Math.max(0,annExp-passAnn);
   const livingC=adjAnn*multiplier;
 
-  // Children: inflate each goal independently
+  // Children: inflate each goal at its own rate
+  const EDU_DEFAULT_INFL=10, MAR_DEFAULT_INFL=8;
   let kidsTToday=0, kidsTInflated=0;
   const kidDetails=[];
   document.querySelectorAll('.sc[id^="k"]').forEach(el=>{
@@ -700,11 +719,13 @@ function calc(){
     const mar=Math.max(0,parseFloat(document.getElementById('km'+id)?.value)||0);
     const eduYrs=Math.max(0,parseFloat(document.getElementById('key'+id)?.value)||0);
     const marYrs=Math.max(0,parseFloat(document.getElementById('kmy'+id)?.value)||0);
-    const eduInfl=eduYrs>0 ? edu*Math.pow(1+inflPct/100, eduYrs) : edu;
-    const marInfl=marYrs>0 ? mar*Math.pow(1+inflPct/100, marYrs) : mar;
+    const eduRate=parseFloat(document.getElementById('kei'+id)?.value)||EDU_DEFAULT_INFL;
+    const marRate=parseFloat(document.getElementById('kmi'+id)?.value)||MAR_DEFAULT_INFL;
+    const eduInfl=eduYrs>0?edu*Math.pow(1+eduRate/100,eduYrs):edu;
+    const marInfl=marYrs>0?mar*Math.pow(1+marRate/100,marYrs):mar;
     kidsTToday+=edu+mar;
     kidsTInflated+=eduInfl+marInfl;
-    if(edu>0||mar>0) kidDetails.push({num:id, edu, mar, eduYrs, marYrs, eduInfl, marInfl});
+    if(edu>0||mar>0) kidDetails.push({num:id,edu,mar,eduYrs,marYrs,eduRate,marRate,eduInfl,marInfl});
   });
 
   // Loans: nominal (no inflation)
@@ -788,11 +809,11 @@ function calc(){
   let bHtml=`<div class="brow"><span class="bl">Living corpus (${inr(adjAnn)} × ${multiplier})</span><span class="bv">${inr(livingC)}</span></div>`;
   kidDetails.forEach(k=>{
     if(k.edu>0){
-      const note=k.eduYrs>0?' <span style="font-size:11px;color:var(--hint)">('+inrs(k.edu)+' → '+k.eduYrs+'yr @'+inflPct+'%)</span>':'';
+      const note=k.eduYrs>0?` <span style="font-size:11px;color:var(--hint)">(${inrs(k.edu)} → ${k.eduYrs}yr @${k.eduRate}%)</span>`:'';
       bHtml+=`<div class="brow"><span class="bl">Child ${k.num} — Education${note}</span><span class="bv">${inr(k.eduInfl)}</span></div>`;
     }
     if(k.mar>0){
-      const note=k.marYrs>0?' <span style="font-size:11px;color:var(--hint)">('+inrs(k.mar)+' → '+k.marYrs+'yr @'+inflPct+'%)</span>':'';
+      const note=k.marYrs>0?` <span style="font-size:11px;color:var(--hint)">(${inrs(k.mar)} → ${k.marYrs}yr @${k.marRate}%)</span>`:'';
       bHtml+=`<div class="brow"><span class="bl">Child ${k.num} — Marriage${note}</span><span class="bv">${inr(k.marInfl)}</span></div>`;
     }
   });
