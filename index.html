@@ -4,281 +4,238 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Freedom Corpus Calculator</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
 <style>
-  :root{
-    --bg:#f6f5f2;--surface:#ffffff;--surface2:#f0efe9;
-    --border:rgba(0,0,0,0.1);--border-strong:rgba(0,0,0,0.2);
-    --text:#1a1a18;--text-muted:#6b6b60;--text-hint:#a0a090;
-    --accent:#1d6a45;--accent-bg:#eaf3de;--accent-text:#27500a;
-    --info-bg:#e6f1fb;--info-text:#0c447c;
-    --success-text:#1d6a45;
-    --radius-md:8px;--radius-lg:12px;
-  }
-  @media(prefers-color-scheme:dark){
-    :root{
-      --bg:#0f0f0d;--surface:#1a1a16;--surface2:#222220;
-      --border:rgba(255,255,255,0.1);--border-strong:rgba(255,255,255,0.2);
-      --text:#f0ede6;--text-muted:#8a8878;--text-hint:#55554a;
-      --accent:#4caf7d;--accent-bg:#0a2e1a;--accent-text:#81c995;
-      --info-bg:#082040;--info-text:#85b7eb;
-      --success-text:#4caf7d;
-    }
-  }
+  :root{--bg:#f6f5f2;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,0.1);--border-s:rgba(0,0,0,0.2);--text:#1a1a18;--muted:#6b6b60;--hint:#a0a090;--success:#1d6a45;--success-bg:#eaf3de;--success-text:#27500a;--info-bg:#e6f1fb;--info-text:#0c447c;--danger:#a32d2d;--danger-bg:#fcebeb;--r-md:8px;--r-lg:12px}
+  @media(prefers-color-scheme:dark){:root{--bg:#0f0f0d;--surface:#1a1a16;--surface2:#222220;--border:rgba(255,255,255,0.1);--border-s:rgba(255,255,255,0.2);--text:#f0ede6;--muted:#8a8878;--hint:#55554a;--success:#4caf7d;--success-bg:#0a2e1a;--success-text:#81c995;--info-bg:#082040;--info-text:#85b7eb;--danger:#f09595;--danger-bg:#3b1010}}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:0 0 60px}
   .wrap{max-width:680px;margin:0 auto;padding:40px 16px}
   h1{font-size:26px;font-weight:600;margin-bottom:4px}
-  .sub{font-size:14px;color:var(--text-muted);margin-bottom:24px}
-  .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden}
-  .card-hd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:0.5px solid var(--border)}
-  .badge{font-size:11px;font-weight:600;color:var(--info-text);background:var(--info-bg);border-radius:var(--radius-md);padding:2px 8px}
-  .card-title{font-size:15px;font-weight:500;flex:1}
-  .card-sum{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums}
-  .card-bd{padding:16px}
-  .toggle{display:inline-flex;background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:3px;margin-bottom:14px}
-  .toggle button{padding:5px 14px;border:none;background:none;font-size:12px;font-weight:500;color:var(--text-muted);border-radius:6px;cursor:pointer;transition:.15s}
-  .toggle button.on{background:var(--surface);border:0.5px solid var(--border-strong);color:var(--text)}
-  .frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:12px}
+  .sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+  .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden}
+  .chd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:0.5px solid var(--border)}
+  .badge{font-size:11px;font-weight:600;border-radius:var(--r-md);padding:2px 8px}
+  .badge.b{color:var(--info-text);background:var(--info-bg)}
+  .badge.g{color:var(--success-text);background:var(--success-bg)}
+  .ctitle{font-size:15px;font-weight:500;flex:1}
+  .csum{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .cbd{padding:16px}
+  .frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:12px}
   .frow:last-child{margin-bottom:0}
   .field{display:flex;flex-direction:column;gap:5px}
-  .field label{font-size:12px;color:var(--text-muted)}
+  .field label{font-size:12px;color:var(--muted)}
   .iw{position:relative}
-  .iw span{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text-muted);pointer-events:none;z-index:1}
+  .iw .pre,.iw .suf{position:absolute;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none;z-index:1}
+  .iw .pre{left:10px} .iw .suf{right:10px}
   .iw input{padding-left:22px!important}
-  input[type=number],select{width:100%;padding:8px 10px;font-size:14px;background:var(--surface2);border:0.5px solid var(--border-strong);border-radius:var(--radius-md);color:var(--text);outline:none;-moz-appearance:textfield;box-sizing:border-box;font-family:inherit;transition:.15s}
+  .iw.sw input{padding-right:28px!important;padding-left:10px!important}
+  input[type=number],select{width:100%;padding:8px 10px;font-size:14px;background:var(--surface2);border:0.5px solid var(--border-s);border-radius:var(--r-md);color:var(--text);outline:none;-moz-appearance:textfield;box-sizing:border-box;font-family:inherit;transition:.15s}
   input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-  input[type=number]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(29,106,69,.12)}
-  .hint{font-size:12px;color:var(--text-hint);margin-top:6px;line-height:1.5}
-  .add-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px;margin-top:10px;border:1px dashed var(--border-strong);background:none;border-radius:var(--radius-md);font-size:13px;color:var(--text-muted);cursor:pointer;transition:.15s;font-family:inherit}
+  input[type=number]:focus,select:focus{border-color:var(--success);box-shadow:0 0 0 3px rgba(29,106,69,.1)}
+  .hint{font-size:12px;color:var(--hint);margin-top:6px;line-height:1.5}
+  .toggle{display:inline-flex;background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--r-md);padding:3px;margin-bottom:12px}
+  .toggle button{padding:5px 14px;border:none;background:none;font-size:12px;font-weight:500;color:var(--muted);border-radius:6px;cursor:pointer;transition:.15s;font-family:inherit}
+  .toggle button.on{background:var(--surface);border:0.5px solid var(--border-s);color:var(--text)}
+  .add-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px;margin-top:10px;border:1px dashed var(--border-s);background:none;border-radius:var(--r-md);font-size:13px;color:var(--muted);cursor:pointer;transition:.15s;font-family:inherit}
   .add-btn:hover{background:var(--surface2);color:var(--text)}
-  .sub-card{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:12px;margin-bottom:8px;position:relative}
-  .sub-card:last-of-type{margin-bottom:0}
-  .sub-lbl{font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
-  .rm{position:absolute;top:10px;right:10px;width:24px;height:24px;border:0.5px solid var(--border-strong);background:none;border-radius:6px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.15s}
-  .rm:hover{background:#ffeaea;border-color:#f09595;color:#a32d2d}
-  .result-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
-  .result-hd{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:0.5px solid var(--border);background:var(--accent-bg)}
-  .result-hd .card-title{color:var(--accent-text)}
-  .result-bd{padding:20px}
-  .total-amt{font-size:34px;font-weight:600;color:var(--text);line-height:1;margin-bottom:4px}
-  .total-note{font-size:13px;color:var(--text-muted);margin-bottom:20px}
-  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:16px}
-  .metric{background:var(--surface2);border-radius:var(--radius-md);padding:10px 12px}
-  .m-lbl{font-size:11px;color:var(--text-muted);margin-bottom:3px}
-  .m-val{font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
-  .m-val.green{color:var(--success-text)}
+  .sc{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--r-md);padding:12px;margin-bottom:8px;position:relative}
+  .sc:last-of-type{margin-bottom:0}
+  .slbl{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+  .rm{position:absolute;top:10px;right:10px;width:24px;height:24px;border:0.5px solid var(--border-s);background:none;border-radius:6px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:.15s}
+  .rm:hover{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
+  .res-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+  .res-hd{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:0.5px solid var(--border)}
+  .res-bd{padding:20px}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px}
+  .met{background:var(--surface2);border-radius:var(--r-md);padding:10px 12px}
+  .ml{font-size:11px;color:var(--muted);margin-bottom:3px}
+  .mv{font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+  .mv.g{color:var(--success)} .mv.b{color:var(--info-text)}
   .brow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;gap:8px}
   .brow:last-child{border-bottom:none}
-  .bl{color:var(--text-muted)}
-  .bv{font-variant-numeric:tabular-nums;color:var(--text)}
-  .brow.total-row .bl{font-weight:600;color:var(--text)}
-  .brow.total-row .bv{font-size:15px;font-weight:600;color:var(--accent-text)}
-  .empty{text-align:center;padding:36px 16px;color:var(--text-hint);font-size:14px}
+  .bl{color:var(--muted)} .bv{font-variant-numeric:tabular-nums;color:var(--text)}
+  .brow.tr .bl{font-weight:600;color:var(--text)} .brow.tr .bv{font-size:15px;font-weight:600}
+  .divider{height:0.5px;background:var(--border);margin:16px 0}
+  .timeline-hd{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px}
+  .prog-wrap{margin-bottom:14px}
+  .prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .prog-track{background:var(--surface2);border-radius:4px;height:8px;overflow:hidden}
+  .prog-fill{height:100%;border-radius:4px;background:var(--success);transition:width .4s}
+  .free-banner{background:var(--success-bg);border:0.5px solid rgba(29,106,69,.25);border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px}
+  .free-banner p{font-size:13px;color:var(--success-text);margin:0}
+  .free-banner p:first-child{font-weight:600;font-size:14px}
+  .infl-note{font-size:12px;color:var(--hint);margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);line-height:1.6}
+  .empty{text-align:center;padding:36px 16px;color:var(--hint);font-size:14px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Freedom corpus calculator</h1>
-  <p class="sub">How much do you need to retire from active income?</p>
+  <p class="sub">How much do you need — and how long will it take?</p>
 
-  <!-- EXPENSES -->
   <div class="card">
-    <div class="card-hd">
-      <span class="badge">01</span>
-      <span class="card-title">Monthly expenses</span>
-      <span class="card-sum" id="sum-exp"></span>
-    </div>
-    <div class="card-bd">
-      <div class="toggle">
-        <button class="on" id="btn-mo" onclick="setMode('mo')">Monthly</button>
-        <button id="btn-yr" onclick="setMode('yr')">Annual</button>
-      </div>
-      <div class="frow">
-        <div class="field">
-          <label id="exp-lbl">Monthly expenses</label>
-          <div class="iw"><span>₹</span><input type="number" id="expenses" placeholder="50000" oninput="calc()" step="1000"></div>
-        </div>
-      </div>
-      <p class="hint">Total household spend — rent/EMI, food, transport, utilities, subscriptions, lifestyle, etc.</p>
+    <div class="chd"><span class="badge b">01</span><span class="ctitle">Monthly expenses</span><span class="csum" id="s-exp"></span></div>
+    <div class="cbd">
+      <div class="toggle"><button class="on" id="bmo" onclick="setMode('mo')">Monthly</button><button id="byr" onclick="setMode('yr')">Annual</button></div>
+      <div class="frow"><div class="field"><label id="elbl">Monthly expenses</label><div class="iw"><span class="pre">₹</span><input type="number" id="exp" placeholder="50000" oninput="calc()" step="1000"></div></div></div>
+      <p class="hint">Total household spend — rent/EMI, food, transport, utilities, lifestyle, etc.</p>
     </div>
   </div>
 
-  <!-- PASSIVE INCOME -->
   <div class="card">
-    <div class="card-hd">
-      <span class="badge">02</span>
-      <span class="card-title">Passive income</span>
-      <span class="card-sum" id="sum-pass"></span>
-    </div>
-    <div class="card-bd">
+    <div class="chd"><span class="badge b">02</span><span class="ctitle">Passive income</span><span class="csum" id="s-pass"></span></div>
+    <div class="cbd">
       <div class="frow">
-        <div class="field">
-          <label>Rent income / month</label>
-          <div class="iw"><span>₹</span><input type="number" id="rent" placeholder="0" oninput="calc()"></div>
-        </div>
-        <div class="field">
-          <label>Dividends / year</label>
-          <div class="iw"><span>₹</span><input type="number" id="divs" placeholder="0" oninput="calc()"></div>
-        </div>
-        <div class="field">
-          <label>Other passive / year</label>
-          <div class="iw"><span>₹</span><input type="number" id="other" placeholder="0" oninput="calc()"></div>
-        </div>
+        <div class="field"><label>Rent / month</label><div class="iw"><span class="pre">₹</span><input type="number" id="rent" placeholder="0" oninput="calc()"></div></div>
+        <div class="field"><label>Dividends / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="divs" placeholder="0" oninput="calc()"></div></div>
+        <div class="field"><label>Other passive / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="oth" placeholder="0" oninput="calc()"></div></div>
       </div>
-      <p class="hint">Passive income reduces the corpus you need. Only include income you'll reliably have post-retirement.</p>
+      <p class="hint">Only include income you'll reliably have post-retirement.</p>
     </div>
   </div>
 
-  <!-- KIDS -->
   <div class="card">
-    <div class="card-hd">
-      <span class="badge">03</span>
-      <span class="card-title">Children's future</span>
-      <span class="card-sum" id="sum-kids"></span>
-    </div>
-    <div class="card-bd">
-      <div id="kids-list"></div>
+    <div class="chd"><span class="badge b">03</span><span class="ctitle">Children's future</span><span class="csum" id="s-kids"></span></div>
+    <div class="cbd">
+      <div id="kl"></div>
       <button class="add-btn" onclick="addKid()">＋ Add a child</button>
-      <p class="hint" style="margin-top:10px">Add higher education and/or marriage fund per child.</p>
     </div>
   </div>
 
-  <!-- LOANS -->
   <div class="card">
-    <div class="card-hd">
-      <span class="badge">04</span>
-      <span class="card-title">Outstanding loans</span>
-      <span class="card-sum" id="sum-loans"></span>
-    </div>
-    <div class="card-bd">
-      <div id="loans-list"></div>
+    <div class="chd"><span class="badge b">04</span><span class="ctitle">Outstanding loans</span><span class="csum" id="s-loans"></span></div>
+    <div class="cbd">
+      <div id="ll"></div>
       <button class="add-btn" onclick="addLoan()">＋ Add a loan</button>
-      <p class="hint" style="margin-top:10px">Enter the current outstanding principal balance of each loan.</p>
     </div>
   </div>
 
-  <!-- RESULT -->
-  <div class="result-card">
-    <div class="result-hd">
-      <span class="card-title">🎯 Your freedom corpus</span>
+  <div class="card">
+    <div class="chd"><span class="badge g">05</span><span class="ctitle">Your progress</span><span class="csum" id="s-prog"></span></div>
+    <div class="cbd">
+      <div class="frow">
+        <div class="field"><label>Current age</label><div class="iw sw"><input type="number" id="age" placeholder="32" oninput="calc()"><span class="suf">yrs</span></div></div>
+        <div class="field"><label>Corpus saved so far</label><div class="iw"><span class="pre">₹</span><input type="number" id="saved" placeholder="0" oninput="calc()"></div></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Monthly savings</label><div class="iw"><span class="pre">₹</span><input type="number" id="msave" placeholder="30000" oninput="calc()"></div></div>
+        <div class="field"><label>Expected annual return</label><div class="iw sw"><input type="number" id="ret" placeholder="10" oninput="calc()"><span class="suf">%</span></div></div>
+      </div>
+      <p class="hint">Assumes 6% long-term inflation for the nominal corpus note.</p>
     </div>
-    <div class="result-bd" id="result-body">
-      <div class="empty">Enter your monthly expenses above to calculate your freedom corpus.</div>
-    </div>
+  </div>
+
+  <div class="res-card">
+    <div class="res-hd"><span class="ctitle">🎯 Results</span></div>
+    <div class="res-bd" id="rbd"><div class="empty">Enter your monthly expenses above to get started.</div></div>
   </div>
 </div>
 
 <script>
-let mode='mo',kidN=0,loanN=0;
-
+let mode='mo',kN=0,lN=0;
 function setMode(m){
   mode=m;
-  document.getElementById('btn-mo').className=m==='mo'?'on':'';
-  document.getElementById('btn-yr').className=m==='yr'?'on':'';
-  document.getElementById('exp-lbl').textContent=m==='mo'?'Monthly expenses':'Annual expenses';
-  document.getElementById('expenses').placeholder=m==='mo'?'50000':'600000';
+  document.getElementById('bmo').className=m==='mo'?'on':'';
+  document.getElementById('byr').className=m==='yr'?'on':'';
+  document.getElementById('elbl').textContent=m==='mo'?'Monthly expenses':'Annual expenses';
+  document.getElementById('exp').placeholder=m==='mo'?'50000':'600000';
   calc();
 }
-
-function inr(n,full){
+function inr(n){
   n=Math.round(n);
-  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+(full?' Cr':'Cr');
-  if(n>=100000) return '₹'+(n/100000).toFixed(full?2:1)+(full?' L':'L');
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+' Cr';
+  if(n>=100000) return '₹'+(n/100000).toFixed(2)+' L';
   return '₹'+n.toLocaleString('en-IN');
 }
-
+function inrs(n){
+  n=Math.round(n);
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+'Cr';
+  if(n>=100000) return '₹'+(n/100000).toFixed(1)+'L';
+  return '₹'+n.toLocaleString('en-IN');
+}
 function v(id){return parseFloat(document.getElementById(id)?.value)||0;}
-
 function addKid(){
-  kidN++;const id=kidN;
-  const d=document.createElement('div');
-  d.className='sub-card';d.id='kid-'+id;
-  d.innerHTML=`<p class="sub-lbl">Child ${id}</p>
-    <button class="rm" onclick="rm('kid-${id}')" title="Remove">✕</button>
-    <div class="frow">
-      <div class="field"><label>Higher education fund</label><div class="iw"><span>₹</span><input type="number" id="ke-${id}" placeholder="2000000" oninput="calc()"></div></div>
-      <div class="field"><label>Marriage fund (optional)</label><div class="iw"><span>₹</span><input type="number" id="km-${id}" placeholder="1500000" oninput="calc()"></div></div>
-    </div>`;
-  document.getElementById('kids-list').appendChild(d);calc();
-}
-
-function addLoan(){
-  loanN++;const id=loanN;
-  const d=document.createElement('div');
-  d.className='sub-card';d.id='loan-'+id;
-  d.innerHTML=`<button class="rm" onclick="rm('loan-${id}')" title="Remove">✕</button>
-    <div class="frow">
-      <div class="field"><label>Loan type</label>
-        <select id="lt-${id}" onchange="calc()">
-          <option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option>
-        </select>
-      </div>
-      <div class="field"><label>Outstanding balance</label><div class="iw"><span>₹</span><input type="number" id="la-${id}" placeholder="5000000" oninput="calc()"></div></div>
-    </div>`;
-  document.getElementById('loans-list').appendChild(d);calc();
-}
-
-function rm(id){const el=document.getElementById(id);if(el)el.remove();calc();}
-
-function calc(){
-  const expRaw=v('expenses');
-  const annualExp=mode==='mo'?expRaw*12:expRaw;
-  const passAnnual=(v('rent')*12)+v('divs')+v('other');
-  const adjAnnual=Math.max(0,annualExp-passAnnual);
-  const livingCorpus=adjAnnual*30;
-
-  let kidsTotal=0;
-  document.querySelectorAll('.sub-card[id^="kid-"]').forEach(el=>{
-    const id=el.id.replace('kid-','');
-    kidsTotal+=(parseFloat(document.getElementById('ke-'+id)?.value)||0)+(parseFloat(document.getElementById('km-'+id)?.value)||0);
-  });
-
-  let loansTotal=0;const loanBreaks=[];
-  document.querySelectorAll('.sub-card[id^="loan-"]').forEach(el=>{
-    const id=el.id.replace('loan-','');
-    const amt=parseFloat(document.getElementById('la-'+id)?.value)||0;
-    const type=document.getElementById('lt-'+id)?.value||'Loan';
-    if(amt>0){loansTotal+=amt;loanBreaks.push({type,amt});}
-  });
-
-  const total=livingCorpus+kidsTotal+loansTotal;
-
-  document.getElementById('sum-exp').textContent=annualExp>0?inr(annualExp/12)+'/mo':'';
-  document.getElementById('sum-pass').textContent=passAnnual>0?'−'+inr(passAnnual)+'/yr':'';
-  document.getElementById('sum-kids').textContent=kidsTotal>0?inr(kidsTotal,true):'';
-  document.getElementById('sum-loans').textContent=loansTotal>0?inr(loansTotal,true):'';
-
-  const rb=document.getElementById('result-body');
-  if(annualExp===0){
-    rb.innerHTML='<div class="empty">Enter your monthly expenses above to calculate your freedom corpus.</div>';
-    return;
-  }
-
-  let mHtml=`<div class="metrics">
-    <div class="metric"><div class="m-lbl">Annual expenses</div><div class="m-val">${inr(annualExp,true)}</div></div>`;
-  if(passAnnual>0){
-    mHtml+=`<div class="metric"><div class="m-lbl">Passive income / yr</div><div class="m-val green">${inr(passAnnual,true)}</div></div>
-    <div class="metric"><div class="m-lbl">Adjusted expenses / yr</div><div class="m-val">${inr(adjAnnual,true)}</div></div>`;
-  }
-  mHtml+='</div>';
-
-  let bHtml=`<div class="brow">
-    <span class="bl">Living corpus (${inr(adjAnnual,true)} × 30)</span>
-    <span class="bv">${inr(livingCorpus,true)}</span>
+  kN++;const id=kN;
+  const d=document.createElement('div');d.className='sc';d.id='k'+id;
+  d.innerHTML=`<p class="slbl">Child ${id}</p>
+  <button class="rm" onclick="rm('k${id}')" title="Remove">✕</button>
+  <div class="frow">
+    <div class="field"><label>Education fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()"></div></div>
+    <div class="field"><label>Marriage fund</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()"></div></div>
   </div>`;
-
-  if(kidsTotal>0) bHtml+=`<div class="brow"><span class="bl">Children's fund</span><span class="bv">${inr(kidsTotal,true)}</span></div>`;
-  
-  loanBreaks.forEach(lb=>{
-    bHtml+=`<div class="brow"><span class="bl">${lb.type}</span><span class="bv">${inr(lb.amt,true)}</span></div>`;
-  });
-
-  bHtml+=`<div class="brow total-row"><span class="bl">Total corpus needed</span><span class="bv">${inr(total,true)}</span></div>`;
-
-  rb.innerHTML=`<div class="total-amt">${inr(total,true)}</div>
-    <p class="total-note">based on the 30× rule · target before age 60</p>
-    ${mHtml}${bHtml}`;
+  document.getElementById('kl').appendChild(d);calc();
+}
+function addLoan(){
+  lN++;const id=lN;
+  const d=document.createElement('div');d.className='sc';d.id='l'+id;
+  d.innerHTML=`<button class="rm" onclick="rm('l${id}')" title="Remove">✕</button>
+  <div class="frow">
+    <div class="field"><label>Loan type</label><select id="lt${id}" onchange="calc()"><option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option></select></div>
+    <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()"></div></div>
+  </div>`;
+  document.getElementById('ll').appendChild(d);calc();
+}
+function rm(id){const el=document.getElementById(id);if(el)el.remove();calc();}
+function yearsToFreedom(pv,pmt,fv,annualRate){
+  if(pv>=fv) return 0;
+  const r=annualRate/100/12;
+  if(r===0){if(pmt<=0) return Infinity;return(fv-pv)/pmt/12;}
+  const denom=pv+pmt/r;
+  if(denom<=0) return Infinity;
+  const ratio=(fv+pmt/r)/denom;
+  if(ratio<=0) return Infinity;
+  const months=Math.log(ratio)/Math.log(1+r);
+  return months<=0?Infinity:months/12;
+}
+function calc(){
+  const expRaw=v('exp');
+  const annExp=mode==='mo'?expRaw*12:expRaw;
+  const passAnn=(v('rent')*12)+v('divs')+v('oth');
+  const adjAnn=Math.max(0,annExp-passAnn);
+  const livingC=adjAnn*30;
+  let kidsT=0;
+  document.querySelectorAll('.sc[id^="k"]').forEach(el=>{const id=el.id.replace('k','');kidsT+=(parseFloat(document.getElementById('ke'+id)?.value)||0)+(parseFloat(document.getElementById('km'+id)?.value)||0);});
+  let loansT=0;const loanB=[];
+  document.querySelectorAll('.sc[id^="l"]').forEach(el=>{const id=el.id.replace('l','');const amt=parseFloat(document.getElementById('la'+id)?.value)||0;const type=document.getElementById('lt'+id)?.value||'Loan';if(amt>0){loansT+=amt;loanB.push({type,amt});}});
+  const target=livingC+kidsT+loansT;
+  const curAge=v('age'),saved=v('saved'),msave=v('msave'),ret=v('ret')||10;
+  document.getElementById('s-exp').textContent=annExp>0?inrs(annExp/12)+'/mo':'';
+  document.getElementById('s-pass').textContent=passAnn>0?'−'+inrs(passAnn)+'/yr':'';
+  document.getElementById('s-kids').textContent=kidsT>0?inrs(kidsT):'';
+  document.getElementById('s-loans').textContent=loansT>0?inrs(loansT):'';
+  document.getElementById('s-prog').textContent=saved>0?inrs(saved)+' saved':'';
+  const rbd=document.getElementById('rbd');
+  if(annExp===0){rbd.innerHTML='<div class="empty">Enter your monthly expenses above to get started.</div>';return;}
+  const pct=target>0?Math.min(100,Math.round(saved/target*100)):0;
+  let mHtml=`<div class="metrics"><div class="met"><div class="ml">Annual expenses</div><div class="mv">${inr(annExp)}</div></div>`;
+  if(passAnn>0) mHtml+=`<div class="met"><div class="ml">Passive income / yr</div><div class="mv g">${inr(passAnn)}</div></div><div class="met"><div class="ml">Adjusted expenses / yr</div><div class="mv">${inr(adjAnn)}</div></div>`;
+  mHtml+='</div>';
+  let bHtml=`<div class="brow"><span class="bl">Living corpus (${inr(adjAnn)} × 30)</span><span class="bv">${inr(livingC)}</span></div>`;
+  if(kidsT>0) bHtml+=`<div class="brow"><span class="bl">Children's fund</span><span class="bv">${inr(kidsT)}</span></div>`;
+  loanB.forEach(lb=>{bHtml+=`<div class="brow"><span class="bl">${lb.type}</span><span class="bv">${inr(lb.amt)}</span></div>`;});
+  bHtml+=`<div class="brow tr"><span class="bl">Total corpus needed</span><span class="bv">${inr(target)}</span></div>`;
+  let timeHtml='';
+  if(saved>0||msave>0){
+    const yrs=yearsToFreedom(saved,msave,target,ret);
+    const freeAge=curAge>0&&yrs<Infinity?curAge+yrs:null;
+    const progBar=`<div class="prog-wrap"><div class="prog-label"><span>${pct}% of corpus reached</span><span>${inr(saved)} of ${inr(target)}</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;
+    let tb='';
+    if(saved>=target){
+      tb=`<div class="free-banner"><p>You are already financially free!</p><p>Your saved corpus meets or exceeds the target.</p></div>`;
+    } else if(yrs===Infinity||yrs>100){
+      tb=`<div class="metrics"><div class="met"><div class="ml">Status</div><div class="mv" style="font-size:13px;color:var(--danger)">Increase savings or return rate</div></div></div>`;
+    } else {
+      const inflTarget=target*Math.pow(1.06,yrs);
+      tb=`<div class="metrics">
+        <div class="met"><div class="ml">Years to freedom</div><div class="mv b">${yrs.toFixed(1)} yrs</div></div>
+        ${freeAge?`<div class="met"><div class="ml">Free at age</div><div class="mv g">${Math.ceil(freeAge)}</div></div>`:''}
+        ${msave>0?`<div class="met"><div class="ml">Assumed return</div><div class="mv">${ret}% / yr</div></div>`:''}
+      </div>
+      <p class="infl-note">At 6% annual inflation, ${inr(target)} today equals <strong>${inr(inflTarget)}</strong> in ${Math.ceil(yrs)} years. Consider targeting the nominal figure for a more conservative plan.</p>`;
+    }
+    timeHtml=`<div class="divider"></div><p class="timeline-hd">Timeline</p>${progBar}${tb}`;
+  }
+  rbd.innerHTML=mHtml+bHtml+timeHtml;
 }
 </script>
 </body>
