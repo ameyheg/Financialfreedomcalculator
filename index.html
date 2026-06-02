@@ -141,7 +141,7 @@
     <div class="cbd">
       <div class="toggle"><button class="on" id="bmo" onclick="setMode('mo')">Monthly</button><button id="byr" onclick="setMode('yr')">Annual</button></div>
       <div class="frow"><div class="field"><label id="elbl">Monthly expenses</label><div class="iw"><span class="pre">₹</span><input type="number" id="exp" placeholder="50000" oninput="calc()" step="1000" min="0"></div></div></div>
-      <p class="hint">Total household spend — food, transport, utilities, rent, lifestyle, etc. <strong>Do not include loan EMIs</strong> — enter loan outstanding balances in section 04 instead. On freedom day you clear all loans from the corpus; EMIs drop to zero.</p>
+      <p class="hint">Your regular monthly spend — food, rent, transport, utilities, lifestyle. <strong>Don't include loan EMIs</strong> — add those in section 04.</p>
 
       <p class="section-label" style="margin-top:14px">Corpus multiplier</p>
       <div class="mult-presets" id="mult-presets">
@@ -150,7 +150,7 @@
         <button class="preset-btn" onclick="setMult(35,this)">35×</button>
         <button class="preset-btn" onclick="setMult(40,this)">40×</button>
       </div>
-      <p class="hint">25× = 4% SWR · <strong>30× = 3.3% SWR (default)</strong> · 35× ≈ 2.9% · 40× = 2.5% (conservative)</p>
+      <p class="hint">A higher multiplier means a larger, safer corpus. <strong>30× is a good default</strong> for most people.</p>
     </div>
   </div>
 
@@ -162,7 +162,7 @@
         <div class="field"><label>Dividends / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="divs" placeholder="0" oninput="calc()" min="0"></div></div>
         <div class="field"><label>Other passive / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="oth" placeholder="0" oninput="calc()" min="0"></div></div>
       </div>
-      <p class="hint">Only include income you're confident will last through retirement. Rental income typically grows with inflation and is the safest to include in full. Fixed income like FD interest or a pension erodes over time — include it, but be conservative with the amount.</p>
+      <p class="hint">Income you'll reliably receive after retirement — rent, dividends, pension. Only include what you're confident will continue.</p>
     </div>
   </div>
 
@@ -179,7 +179,7 @@
     <div class="cbd">
       <div id="ll"></div>
       <button class="add-btn" onclick="addLoan()">＋ Add a loan</button>
-      <p class="hint" style="margin-top:8px"><strong>Model A — clear on freedom day.</strong> Enter the outstanding principal. The full balance is added to your corpus target so you can pay it off on day one of retirement. Since EMIs disappear, keep them out of your monthly expenses above.</p>
+      <p class="hint" style="margin-top:8px">Enter the outstanding balance. It gets added to your corpus target and cleared on retirement day — so you start debt-free with no EMIs.</p>
     </div>
   </div>
 
@@ -194,7 +194,7 @@
         <div class="field"><label>Monthly savings</label><div class="iw"><span class="pre">₹</span><input type="number" id="msave" placeholder="30000" oninput="calc()" min="0"></div></div>
         <div class="field"><label>Expected annual return</label><div class="iw sw"><input type="number" id="ret" placeholder="10" oninput="calc()" min="0" max="50" step="0.5"><span class="suf">%</span></div></div>
       </div>
-      <p class="hint">This is your <strong>pre-retirement return</strong> — what your investments earn while building the corpus (equity-heavy portfolios typically return 10–12%). Post-retirement returns are already handled by the corpus multiplier above: at 30×, your corpus is sized to safely sustain withdrawals indefinitely without you needing to manage it.</p>
+      <p class="hint">What your investments earn per year while you're building the corpus. Equity mutual funds have historically returned 10–12%.</p>
 
       <!-- Step-up investment -->
       <div class="stepup-box">
@@ -215,11 +215,11 @@
               <div class="iw sw"><input type="number" id="stepup-val" placeholder="12" oninput="onCustomStepUp()" min="0" max="100" step="0.5"><span class="suf">%</span></div>
             </div>
           </div>
-          <p class="hint" style="margin-top:6px">Your monthly savings will grow by this % every year. E.g. save ₹30k now → ₹33k next year at 10% step-up.</p>
+          <p class="hint" style="margin-top:6px">Your savings increase by this % every year. At 10% step-up, ₹30k/mo becomes ₹33k next year, ₹36.3k the year after, and so on.</p>
         </div>
       </div>
 
-      <p class="hint" style="margin-top:8px">Timeline uses 6% general inflation. Living expenses inflate over the timeline; children's costs are inflated at their own rate to the target year; loans at face value (no inflation).</p>
+      <p class="hint" style="margin-top:8px">Assumes 6% annual inflation on living expenses.</p>
     </div>
   </div>
 
@@ -227,7 +227,7 @@
   <div class="card">
     <div class="chd"><span class="badge p">06</span><span class="ctitle">Free by age — how much to save?</span></div>
     <div class="cbd">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Enter a target age and we'll tell you exactly how much you need to save per month to hit your freedom corpus (inflation-adjusted).</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Want to retire by a specific age? Enter it below and we'll tell you exactly how much to save per month.</p>
       <div class="frow">
         <div class="field">
           <label>Target freedom age</label>
@@ -342,7 +342,7 @@ function kidHtml(id,edu,eduYrs,eduInfl,mar,marYrs,marInfl){
       <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="key${id}" placeholder="10" oninput="calc()" min="0" max="50" value="${eduYrs}"><span class="suf">yrs</span></div></div>
       <div class="field"><label>Inflation rate</label><div class="iw sw"><input type="number" id="kei${id}" placeholder="10" oninput="calc()" min="0" max="40" step="0.5" value="${eduInfl}"><span class="suf">%</span></div></div>
     </div>
-    <p class="hint" style="margin-top:2px">Typical: <strong>8–10%</strong> for private engineering/medical; <strong>10–12%</strong> for top private colleges &amp; coaching; <strong>6–8%</strong> for government colleges. Defaults to 10% if left blank.</p>
+    <p class="hint" style="margin-top:2px">Private colleges: 10–12%/yr · Govt colleges: 6–8%/yr · Leave blank for 10% default.</p>
   </div>
   <div class="kid-section">
     <p class="kid-section-label">💍 Marriage</p>
@@ -351,7 +351,7 @@ function kidHtml(id,edu,eduYrs,eduInfl,mar,marYrs,marInfl){
       <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="kmy${id}" placeholder="20" oninput="calc()" min="0" max="50" value="${marYrs}"><span class="suf">yrs</span></div></div>
       <div class="field"><label>Inflation rate</label><div class="iw sw"><input type="number" id="kmi${id}" placeholder="8" oninput="calc()" min="0" max="40" step="0.5" value="${marInfl}"><span class="suf">%</span></div></div>
     </div>
-    <p class="hint" style="margin-top:2px">Venue, catering &amp; jewellery have risen faster than general inflation. Typical: <strong>7–9%</strong> for mid-range weddings; <strong>9–12%</strong> for destination/large weddings. Defaults to 8% if left blank.</p>
+    <p class="hint" style="margin-top:2px">Weddings typically inflate faster than general prices. 7–9% for mid-range, 9–12% for large/destination. Leave blank for 8% default.</p>
   </div>`;
 }
 function addLoan(){
@@ -367,37 +367,47 @@ function addLoan(){
 function rm(id){const el=document.getElementById(id);if(el)el.remove();calc();}
 
 /* ── Core: corpus growth with step-up SIP ── */
+// Supports fractional years: runs floor(years) full years, then partial months for the remainder
 function simulateStepUp(pv, initMonthly, years, annualReturnPct, stepUpPct){
   const monthlyRate = annualReturnPct / 100 / 12;
   let corpus = pv;
   let monthly = initMonthly;
-  for(let yr=0; yr<years; yr++){
+  const fullYears = Math.floor(years);
+  const extraMonths = Math.round((years - fullYears) * 12); // partial year as whole months
+  for(let yr=0; yr<fullYears; yr++){
     for(let mo=0; mo<12; mo++){
       corpus = corpus * (1 + monthlyRate) + monthly;
     }
     monthly = monthly * (1 + stepUpPct/100);
   }
+  // Partial year (step-up not applied mid-year)
+  for(let mo=0; mo<extraMonths; mo++){
+    corpus = corpus * (1 + monthlyRate) + monthly;
+  }
   return corpus;
 }
 
 /* ── Inflation-adjusted: years to freedom ── */
-// Binary search for years where corpus(y) >= inflTarget*(1+infl)^y + fixedTarget
-// inflTarget = living corpus (inflates over time)
-// fixedTarget = pre-inflated kids + nominal loans (constant)
+// Simulates month by month — result is exact to the nearest month, consistent with chart data
 function yearsToFreedomInflAdj(pv, initMonthly, inflTarget, fixedTarget, annualReturnPct, stepUpPct, inflPct){
   const totalNow = inflTarget + fixedTarget;
   if(pv >= totalNow) return 0;
   if(initMonthly <= 0 && pv <= 0) return Infinity;
-  const tAt = y => inflTarget * Math.pow(1+inflPct/100, y) + fixedTarget;
-  const c80 = simulateStepUp(pv, initMonthly, 80, annualReturnPct, stepUpPct);
-  if(c80 < tAt(80)) return Infinity;
-  let lo=0, hi=80;
-  for(let i=0;i<60;i++){
-    const mid=(lo+hi)/2;
-    const corpus = simulateStepUp(pv, initMonthly, mid, annualReturnPct, stepUpPct);
-    if(corpus >= tAt(mid)) hi=mid; else lo=mid;
+  const monthlyRate = annualReturnPct / 100 / 12;
+  const monthlyInfl = Math.pow(1 + inflPct/100, 1/12) - 1;
+  let corpus = pv;
+  let monthly = initMonthly;
+  let inflFactor = 1; // tracks (1+infl)^(mo/12)
+  const maxMonths = 80 * 12;
+  for(let mo=1; mo<=maxMonths; mo++){
+    corpus = corpus * (1 + monthlyRate) + monthly;
+    inflFactor *= (1 + monthlyInfl);
+    // Step-up once per year (after each 12 months)
+    if(mo % 12 === 0) monthly *= (1 + stepUpPct/100);
+    const tgt = inflTarget * inflFactor + fixedTarget;
+    if(corpus >= tgt) return mo / 12;
   }
-  return (lo+hi)/2;
+  return Infinity;
 }
 
 /* ── Reverse: monthly savings needed (inflation-adjusted target) ── */
@@ -564,8 +574,26 @@ function drawChart(saved, msave, inflTarget, fixedTarget, ret, stepUpPctVal, use
   });
   ctx.stroke();
 
-  // Intersection dot
-  const ix=xS(yrs), iy=yS(inflTarget*Math.pow(1+inflPct/100,yrs)+fixedTarget);
+  // True visual intersection: scan pts for where corpus crosses target, then interpolate
+  let crossYr = yrs; // fallback to binary-search answer
+  let crossVal = null;
+  for(let i=1; i<pts.length; i++){
+    const prev=pts[i-1], curr=pts[i];
+    const prevDiff = prev.corpus - prev.target;
+    const currDiff = curr.corpus - curr.target;
+    if(prevDiff <= 0 && currDiff >= 0){ // corpus crosses target upward between i-1 and i
+      const t = prevDiff / (prevDiff - currDiff); // 0..1 fraction within this 1-yr segment
+      crossYr  = prev.year + t;
+      crossVal = prev.corpus + t * (curr.corpus - prev.corpus);
+      break;
+    }
+  }
+  // If no crossing found in pts (e.g. corpus starts above target), just use the dot on target at yrs
+  if(crossVal === null){
+    crossVal = inflTarget*Math.pow(1+inflPct/100,yrs)+fixedTarget;
+  }
+  const ix = xS(crossYr);
+  const iy = yS(crossVal);
   ctx.fillStyle=successClr;
   ctx.beginPath();ctx.arc(ix,iy,5,0,Math.PI*2);ctx.fill();
   ctx.fillStyle=colorAlpha(successClr,0.3);
@@ -573,12 +601,13 @@ function drawChart(saved, msave, inflTarget, fixedTarget, ret, stepUpPctVal, use
   ctx.fillStyle='#fff';
   ctx.beginPath();ctx.arc(ix,iy,2.5,0,Math.PI*2);ctx.fill();
 
-  // Label at intersection
+  // Label at intersection — show age derived from crossYr
   ctx.fillStyle=mutedClr;
   ctx.font='bold 10px -apple-system,sans-serif';
   ctx.textAlign='center';
-  const intLabel=curAge>0?'Age '+Math.ceil(curAge+yrs):yrs.toFixed(1)+'y';
-  ctx.fillText(intLabel,ix,iy-14);
+  const intLabel=curAge>0?'Age '+Math.ceil(curAge+crossYr):Math.ceil(crossYr)+'y';
+  const labelY = iy > 20 ? iy-14 : iy+20;
+  ctx.fillText(intLabel,ix,labelY);
 }
 
 /* ── localStorage ── */
@@ -849,7 +878,7 @@ function calc(){
         ${useStepUp?`<div class="met"><div class="ml">Step-up</div><div class="mv p">${stepUpPct}% / yr</div></div>`:''}
       </div>
       ${stepDetail?`<div class="divider" style="margin:10px 0"></div><p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">Step-up savings projection</p>${stepDetail}`:''}
-      <p class="infl-note">📊 Inflation-adjusted total at year ${Math.ceil(yrs)}: <strong>${inr(totalInflated)}</strong>. Living expenses inflate at ${inflPct}%/yr; children's costs pre-inflated to their target year; loans at face value.</p>`;
+      <p class="infl-note">📊 Your inflation-adjusted corpus target at year ${Math.ceil(yrs)}: <strong>${inr(totalInflated)}</strong>.</p>`;
 
       // Chart
       chartHtml=`<div class="chart-wrap" id="chart-wrap">
