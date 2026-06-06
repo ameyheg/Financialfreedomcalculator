@@ -335,47 +335,47 @@ function clamp(val,lo,hi){return Math.max(lo,Math.min(hi,val));}
 function addKid(){
   kN++;const id=kN;
   const d=document.createElement('div');d.className='sc';d.id='k'+id;
-  d.innerHTML=kidHtml(id,'','','','','','');
+  d.innerHTML=kidHtml(id);
   document.getElementById('kl').appendChild(d);calc();
 }
-function kidHtml(id,edu,eduYrs,eduInfl,mar,marYrs,marInfl){
+function kidHtml(id){
   return `<p class="slbl">Child ${id}</p>
   <button class="rm" onclick="rm('k${id}')" title="Remove">✕</button>
   <div class="kid-section">
     <p class="kid-section-label">🎓 Education</p>
     <div class="frow">
-      <div class="field"><label>Today's cost (₹)</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()" min="0" value="${edu}"></div></div>
-      <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="key${id}" placeholder="10" oninput="calc()" min="0" max="50" value="${eduYrs}"><span class="suf">yrs</span></div></div>
-      <div class="field"><label>Inflation rate</label><div class="iw sw"><input type="number" id="kei${id}" placeholder="10" oninput="calc()" min="0" max="40" step="0.5" value="${eduInfl}"><span class="suf">%</span></div></div>
+      <div class="field"><label>Today's cost (₹)</label><div class="iw"><span class="pre">₹</span><input type="number" id="ke${id}" placeholder="2000000" oninput="calc()" min="0"></div></div>
+      <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="key${id}" placeholder="10" oninput="calc()" min="0" max="50"><span class="suf">yrs</span></div></div>
+      <div class="field"><label>Inflation rate</label><div class="iw sw"><input type="number" id="kei${id}" placeholder="10" oninput="calc()" min="0" max="40" step="0.5"><span class="suf">%</span></div></div>
     </div>
     <p class="hint" style="margin-top:2px">Private colleges: 10–12%/yr · Govt colleges: 6–8%/yr · Leave blank for 10% default.</p>
   </div>
   <div class="kid-section">
     <p class="kid-section-label">💍 Marriage</p>
     <div class="frow">
-      <div class="field"><label>Today's cost (₹)</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()" min="0" value="${mar}"></div></div>
-      <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="kmy${id}" placeholder="20" oninput="calc()" min="0" max="50" value="${marYrs}"><span class="suf">yrs</span></div></div>
-      <div class="field"><label>Inflation rate</label><div class="iw sw"><input type="number" id="kmi${id}" placeholder="8" oninput="calc()" min="0" max="40" step="0.5" value="${marInfl}"><span class="suf">%</span></div></div>
+      <div class="field"><label>Today's cost (₹)</label><div class="iw"><span class="pre">₹</span><input type="number" id="km${id}" placeholder="1500000" oninput="calc()" min="0"></div></div>
+      <div class="field"><label>Needed in</label><div class="iw sw"><input type="number" id="kmy${id}" placeholder="20" oninput="calc()" min="0" max="50"><span class="suf">yrs</span></div></div>
+      <div class="field"><label>Inflation rate</label><div class="iw sw"><input type="number" id="kmi${id}" placeholder="8" oninput="calc()" min="0" max="40" step="0.5"><span class="suf">%</span></div></div>
     </div>
     <p class="hint" style="margin-top:2px">Weddings typically inflate faster than general prices. 7–9% for mid-range, 9–12% for large/destination. Leave blank for 8% default.</p>
   </div>`;
 }
-function loanHtml(id,amt,rate,tenure){
+function loanHtml(id){
   return `<button class="rm" onclick="rm('l${id}')" title="Remove">✕</button>
   <div class="frow">
     <div class="field"><label>Loan type</label><select id="lt${id}" onchange="calc()"><option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option></select></div>
-    <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()" min="0" value="${amt}"></div></div>
+    <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()" min="0"></div></div>
   </div>
   <div class="frow">
-    <div class="field"><label>Interest rate</label><div class="iw sw"><input type="number" id="lr${id}" placeholder="9" oninput="calc()" min="0" max="40" step="0.25" value="${rate}"><span class="suf">%</span></div></div>
-    <div class="field"><label>Remaining tenure</label><div class="iw sw"><input type="number" id="ly${id}" placeholder="15" oninput="calc()" min="0" max="40" value="${tenure}"><span class="suf">yrs</span></div></div>
+    <div class="field"><label>Interest rate</label><div class="iw sw"><input type="number" id="lr${id}" placeholder="9" oninput="calc()" min="0" max="40" step="0.25"><span class="suf">%</span></div></div>
+    <div class="field"><label>Remaining tenure</label><div class="iw sw"><input type="number" id="ly${id}" placeholder="15" oninput="calc()" min="0" max="40"><span class="suf">yrs</span></div></div>
   </div>
   <p class="hint" id="lemi${id}" style="margin-top:4px;font-style:italic"></p>`;
 }
 function addLoan(){
   lN++;const id=lN;
   const d=document.createElement('div');d.className='sc';d.id='l'+id;
-  d.innerHTML=loanHtml(id,'','','');
+  d.innerHTML=loanHtml(id);
   document.getElementById('ll').appendChild(d);calc();
 }
 function rm(id){const el=document.getElementById(id);if(el)el.remove();calc();}
@@ -459,7 +459,7 @@ function simulateWithLoans(pv,initMonthly,years,annualReturnPct,stepUpPct,loanGo
   if(kidGoals){
     for(let ki=0;ki<kidGoals.length;ki++){
       if(kidGoals[ki].neededInYears<=0&&kidGoals[ki].inflatedCost>0){
-        corpus-=kidGoals[ki].inflatedCost;
+        corpus=Math.max(0, corpus-kidGoals[ki].inflatedCost);
         kidPaid[ki]=true;
       }
     }
@@ -473,7 +473,7 @@ function simulateWithLoans(pv,initMonthly,years,annualReturnPct,stepUpPct,loanGo
       const yrsNow=mo/12;
       for(let ki=0;ki<kidGoals.length;ki++){
         if(!kidPaid[ki]&&kidGoals[ki].neededInYears>0&&yrsNow>=kidGoals[ki].neededInYears){
-          corpus-=kidGoals[ki].inflatedCost;
+          corpus=Math.max(0, corpus-kidGoals[ki].inflatedCost);
           kidPaid[ki]=true;
         }
       }
@@ -502,7 +502,7 @@ function yearsToFreedomInflAdj(pv,initMonthly,inflTarget,fixedPassiveOffset,stat
     const yrsNow=mo/12;
     for(let ki=0;ki<kidGoals.length;ki++){
       if(!kidPaid[ki]&&kidGoals[ki].neededInYears>0&&yrsNow>=kidGoals[ki].neededInYears){
-        corpus-=kidGoals[ki].inflatedCost;
+        corpus=Math.max(0, corpus-kidGoals[ki].inflatedCost);
         kidPaid[ki]=true;
       }
     }
@@ -589,7 +589,7 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
   wrap.style.display='block';
 
   const dpr=window.devicePixelRatio||1;
-  const w=wrap.clientWidth-28;
+  const w=Math.max(100, wrap.clientWidth-28);
   const h=200;
   canvas.width=w*dpr; canvas.height=h*dpr;
   canvas.style.width=w+'px'; canvas.style.height=h+'px';
@@ -657,7 +657,7 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
     
     inflFactor*=(1+monthlyInfl);
     
-    // Deduct kid costs at their due month
+    // Deduct kid costs at their due month (floor at zero for consistency across simulations)
     for(let ki=0;ki<kidGoals.length;ki++){
       if(!kidPaid[ki]&&kidGoals[ki].neededInYears>0&&yrsNow>=kidGoals[ki].neededInYears){
         cCorpus=Math.max(0, cCorpus-kidGoals[ki].inflatedCost);
@@ -922,23 +922,32 @@ function loadState(){
       });
     }
 
-    // Kids
+    // Kids (Sanitized value assignment to prevent XSS)
     if(s.kids && s.kids.length){
       s.kids.forEach(kid=>{
         kN++;const id=kN;
         const d=document.createElement('div');d.className='sc';d.id='k'+id;
-        d.innerHTML=kidHtml(id,kid.edu||'',kid.eduYrs||'',kid.eduInfl||'',kid.mar||'',kid.marYrs||'',kid.marInfl||'');
+        d.innerHTML=kidHtml(id);
         document.getElementById('kl').appendChild(d);
+        document.getElementById('ke'+id).value=kid.edu||'';
+        document.getElementById('key'+id).value=kid.eduYrs||'';
+        document.getElementById('kei'+id).value=kid.eduInfl||'';
+        document.getElementById('km'+id).value=kid.mar||'';
+        document.getElementById('kmy'+id).value=kid.marYrs||'';
+        document.getElementById('kmi'+id).value=kid.marInfl||'';
       });
     }
 
-    // Loans
+    // Loans (Sanitized value assignment to prevent XSS)
     if(s.loans && s.loans.length){
       s.loans.forEach(loan=>{
         lN++;const id=lN;
         const d=document.createElement('div');d.className='sc';d.id='l'+id;
-        d.innerHTML=loanHtml(id,loan.amt||'',loan.rate||'',loan.tenure||'');
+        d.innerHTML=loanHtml(id);
         document.getElementById('ll').appendChild(d);
+        document.getElementById('la'+id).value=loan.amt||'';
+        document.getElementById('lr'+id).value=loan.rate||'';
+        document.getElementById('ly'+id).value=loan.tenure||'';
         if(loan.type){
           const sel=document.getElementById('lt'+id);
           if(sel){
