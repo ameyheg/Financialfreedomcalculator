@@ -162,7 +162,12 @@
         <div class="field"><label>Dividends / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="divs" placeholder="0" oninput="calc()" min="0"></div></div>
         <div class="field"><label>Other passive / year</label><div class="iw"><span class="pre">₹</span><input type="number" id="oth" placeholder="0" oninput="calc()" min="0"></div></div>
       </div>
-      <p class="hint">Income you'll reliably receive after retirement — rent, dividends, pension. Only include what you're confident will continue.</p>
+      <div class="frow" style="margin-top:8px">
+        <div class="field"><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="checkbox" id="rent-infl" checked onchange="calc()" style="accent-color:var(--success);width:14px;height:14px"> Rent grows with inflation</label></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="checkbox" id="divs-infl" checked onchange="calc()" style="accent-color:var(--success);width:14px;height:14px"> Dividends grow</label></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="checkbox" id="oth-infl" checked onchange="calc()" style="accent-color:var(--success);width:14px;height:14px"> Other grows</label></div>
+      </div>
+      <p class="hint">Income you'll reliably receive after retirement. Uncheck "grows" for fixed income like pensions or FD interest that won't keep up with inflation.</p>
     </div>
   </div>
 
@@ -179,7 +184,7 @@
     <div class="cbd">
       <div id="ll"></div>
       <button class="add-btn" onclick="addLoan()">＋ Add a loan</button>
-      <p class="hint" style="margin-top:8px">Enter the outstanding balance. It gets added to your corpus target and cleared on retirement day — so you start debt-free with no EMIs.</p>
+      <p class="hint" style="margin-top:8px">Enter loan details. With interest rate & tenure, we'll project the declining balance and free up EMI savings when the loan ends.</p>
     </div>
   </div>
 
@@ -192,9 +197,10 @@
       </div>
       <div class="frow">
         <div class="field"><label>Monthly savings</label><div class="iw"><span class="pre">₹</span><input type="number" id="msave" placeholder="30000" oninput="calc()" min="0"></div></div>
-        <div class="field"><label>Expected annual return</label><div class="iw sw"><input type="number" id="ret" placeholder="10" oninput="calc()" min="0" max="50" step="0.5"><span class="suf">%</span></div></div>
+        <div class="field"><label>Expected return (pre-retirement)</label><div class="iw sw"><input type="number" id="ret" placeholder="10" oninput="calc()" min="0" max="50" step="0.5"><span class="suf">%</span></div></div>
+        <div class="field"><label>Expected return (post-retirement)</label><div class="iw sw"><input type="number" id="ret-post" placeholder="7" oninput="calc()" min="0" max="50" step="0.5"><span class="suf">%</span></div></div>
       </div>
-      <p class="hint">What your investments earn per year while you're building the corpus. Equity mutual funds have historically returned 10–12%.</p>
+      <p class="hint">Accumulation phase: equity mutual funds have returned 10–12%. Post-retirement: funds are typically shifted to safer debt/hybrid assets returning 6–8%.</p>
 
       <!-- Step-up investment -->
       <div class="stepup-box">
@@ -354,14 +360,22 @@ function kidHtml(id,edu,eduYrs,eduInfl,mar,marYrs,marInfl){
     <p class="hint" style="margin-top:2px">Weddings typically inflate faster than general prices. 7–9% for mid-range, 9–12% for large/destination. Leave blank for 8% default.</p>
   </div>`;
 }
+function loanHtml(id,amt,rate,tenure){
+  return `<button class="rm" onclick="rm('l${id}')" title="Remove">✕</button>
+  <div class="frow">
+    <div class="field"><label>Loan type</label><select id="lt${id}" onchange="calc()"><option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option></select></div>
+    <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()" min="0" value="${amt}"></div></div>
+  </div>
+  <div class="frow">
+    <div class="field"><label>Interest rate</label><div class="iw sw"><input type="number" id="lr${id}" placeholder="9" oninput="calc()" min="0" max="40" step="0.25" value="${rate}"><span class="suf">%</span></div></div>
+    <div class="field"><label>Remaining tenure</label><div class="iw sw"><input type="number" id="ly${id}" placeholder="15" oninput="calc()" min="0" max="40" value="${tenure}"><span class="suf">yrs</span></div></div>
+  </div>
+  <p class="hint" id="lemi${id}" style="margin-top:4px;font-style:italic"></p>`;
+}
 function addLoan(){
   lN++;const id=lN;
   const d=document.createElement('div');d.className='sc';d.id='l'+id;
-  d.innerHTML=`<button class="rm" onclick="rm('l${id}')" title="Remove">✕</button>
-  <div class="frow">
-    <div class="field"><label>Loan type</label><select id="lt${id}" onchange="calc()"><option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option></select></div>
-    <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()" min="0"></div></div>
-  </div>`;
+  d.innerHTML=loanHtml(id,'','','');
   document.getElementById('ll').appendChild(d);calc();
 }
 function rm(id){const el=document.getElementById(id);if(el)el.remove();calc();}
@@ -387,73 +401,158 @@ function simulateStepUp(pv, initMonthly, years, annualReturnPct, stepUpPct){
   return corpus;
 }
 
+/* ── Helper: kids target at a given timeline point (PV-adjusted) ── */
+// For costs due AFTER the current point, discounts to present value at post-retirement rate
+function kidsTargetAt(kidGoals, years, postRetireReturnPct){
+  let t=0;
+  for(const g of kidGoals){
+    if(g.neededInYears<=0||years<g.neededInYears){
+      const gap=g.neededInYears-years;
+      if(gap>0){
+        t+=g.inflatedCost/Math.pow(1+postRetireReturnPct/100,gap);
+      } else {
+        t+=g.inflatedCost;
+      }
+    }
+  }
+  return t;
+}
+
+/* ── Loan amortization helpers ── */
+function computeEMI(principal,annualRate,tenureMonths){
+  if(principal<=0||tenureMonths<=0) return 0;
+  if(annualRate<=0) return principal/tenureMonths;
+  const r=annualRate/100/12;
+  return principal*r*Math.pow(1+r,tenureMonths)/(Math.pow(1+r,tenureMonths)-1);
+}
+function loanBalanceAfter(principal,annualRate,emi,months){
+  if(principal<=0||months<=0) return principal;
+  if(annualRate<=0) return Math.max(0,principal-emi*months);
+  const r=annualRate/100/12;
+  const f=Math.pow(1+r,months);
+  return Math.max(0,principal*f-emi*(f-1)/r);
+}
+// Total projected loan balance at `months` from now
+function loansTargetAt(loanGoals,months){
+  let t=0;
+  for(const g of loanGoals){
+    if(months>=g.tenureMonths) continue;
+    t+=loanBalanceAfter(g.outstanding,g.annualRate,g.emi,months);
+  }
+  return t;
+}
+// Total EMI freed at `months` (from fully paid loans)
+function loansEMIBoostAt(loanGoals,months){
+  let b=0;
+  for(const g of loanGoals){ if(months>g.tenureMonths) b+=g.emi; }
+  return b;
+}
+
+/* ── Corpus growth with step-up SIP + EMI boost + kid cost drawdowns ── */
+function simulateWithLoans(pv,initMonthly,years,annualReturnPct,stepUpPct,loanGoals,kidGoals){
+  const monthlyRate=annualReturnPct/100/12;
+  let corpus=pv, monthly=initMonthly;
+  const totalMonths=Math.round(years*12);
+  const kidPaid=kidGoals ? new Array(kidGoals.length).fill(false) : [];
+  
+  // Deduct kid costs due at year 0
+  if(kidGoals){
+    for(let ki=0;ki<kidGoals.length;ki++){
+      if(kidGoals[ki].neededInYears<=0&&kidGoals[ki].inflatedCost>0){
+        corpus-=kidGoals[ki].inflatedCost;
+        kidPaid[ki]=true;
+      }
+    }
+  }
+
+  for(let mo=1;mo<=totalMonths;mo++){
+    corpus=corpus*(1+monthlyRate)+monthly+loansEMIBoostAt(loanGoals,mo);
+    if(mo%12===0) monthly*=(1+stepUpPct/100);
+    // Deduct kid costs at their due month
+    if(kidGoals){
+      const yrsNow=mo/12;
+      for(let ki=0;ki<kidGoals.length;ki++){
+        if(!kidPaid[ki]&&kidGoals[ki].neededInYears>0&&yrsNow>=kidGoals[ki].neededInYears){
+          corpus-=kidGoals[ki].inflatedCost;
+          kidPaid[ki]=true;
+        }
+      }
+    }
+  }
+  return corpus;
+}
+
 /* ── Inflation-adjusted: years to freedom ── */
-// Simulates month by month — result is exact to the nearest month, consistent with chart data
-function yearsToFreedomInflAdj(pv, initMonthly, inflTarget, fixedTarget, annualReturnPct, stepUpPct, inflPct){
-  const totalNow = inflTarget + fixedTarget;
-  if(pv >= totalNow) return 0;
-  if(initMonthly <= 0 && pv <= 0) return Infinity;
-  const monthlyRate = annualReturnPct / 100 / 12;
-  const monthlyInfl = Math.pow(1 + inflPct/100, 1/12) - 1;
-  let corpus = pv;
-  let monthly = initMonthly;
-  let inflFactor = 1; // tracks (1+infl)^(mo/12)
-  const maxMonths = 80 * 12;
-  for(let mo=1; mo<=maxMonths; mo++){
-    corpus = corpus * (1 + monthlyRate) + monthly;
-    inflFactor *= (1 + monthlyInfl);
-    // Step-up once per year (after each 12 months)
-    if(mo % 12 === 0) monthly *= (1 + stepUpPct/100);
-    const tgt = inflTarget * inflFactor + fixedTarget;
-    if(corpus >= tgt) return mo / 12;
+// Month-by-month with loan amortization, EMI boost, kid cost drawdowns
+function yearsToFreedomInflAdj(pv,initMonthly,inflTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,annualReturnPct,postRetireReturnPct,stepUpPct,inflPct){
+  const totalNow=Math.max(0,inflTarget-fixedPassiveOffset)+staticLoansT+loansTargetAt(loanGoals,0)+kidsTargetAt(kidGoals,0,postRetireReturnPct);
+  if(pv>=totalNow) return 0;
+  if(initMonthly<=0&&pv<=0) return Infinity;
+  const monthlyRate=annualReturnPct/100/12;
+  const monthlyInfl=Math.pow(1+inflPct/100,1/12)-1;
+  let corpus=pv, monthly=initMonthly, inflFactor=1;
+  const maxMonths=80*12;
+  // Track which kid goals have been paid (deducted)
+  const kidPaid=new Array(kidGoals.length).fill(false);
+  for(let mo=1;mo<=maxMonths;mo++){
+    corpus=corpus*(1+monthlyRate)+monthly+loansEMIBoostAt(loanGoals,mo);
+    inflFactor*=(1+monthlyInfl);
+    if(mo%12===0) monthly*=(1+stepUpPct/100);
+    // Deduct kid costs at their due month
+    const yrsNow=mo/12;
+    for(let ki=0;ki<kidGoals.length;ki++){
+      if(!kidPaid[ki]&&kidGoals[ki].neededInYears>0&&yrsNow>=kidGoals[ki].neededInYears){
+        corpus-=kidGoals[ki].inflatedCost;
+        kidPaid[ki]=true;
+      }
+    }
+    // Target no longer includes paid kid costs (kidsTargetAt handles this)
+    const livingTgt=Math.max(0,inflTarget*inflFactor-fixedPassiveOffset);
+    const tgt=livingTgt+staticLoansT+loansTargetAt(loanGoals,mo)+kidsTargetAt(kidGoals,yrsNow,postRetireReturnPct);
+    if(corpus>=tgt) return yrsNow;
   }
   return Infinity;
 }
 
-/* ── Reverse: monthly savings needed (inflation-adjusted target) ── */
-function monthlyNeeded_flat(pv, fv, years, annualReturnPct){
-  if(years <= 0) return Infinity;
-  const r = annualReturnPct / 100 / 12;
-  const n = years * 12;
-  if(r === 0) return Math.max(0, (fv - pv) / n);
-  const fvFactor = Math.pow(1+r, n);
-  const pvGrown = pv * fvFactor;
-  const sipFactor = (fvFactor - 1) / r;
-  const needed = (fv - pvGrown) / sipFactor;
-  return needed <= 0 ? 0 : needed;
-}
 
-function monthlyNeeded_stepUp(pv, fv, years, annualReturnPct, stepUpPct){
-  if(years <= 0) return Infinity;
-  const pvGrown = simulateStepUp(pv, 0, years, annualReturnPct, stepUpPct);
-  if(pvGrown >= fv) return 0;
-  let lo=0, hi=fv/12;
+
+// inflTarget inflates; loans amortize; kid costs deducted; EMI boost factored in
+function monthlyNeededInflAdj(pv,inflTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,years,annualReturnPct,postRetireReturnPct,stepUpPct,inflPct){
+  if(years<=0) return Infinity;
+  const months=Math.round(years*12);
+  // Target at end = living + remaining loans + remaining kid costs (those due AFTER target year)
+  const livingTgt=Math.max(0,inflTarget*Math.pow(1+inflPct/100,years)-fixedPassiveOffset);
+  const adjTotal=livingTgt+staticLoansT+loansTargetAt(loanGoals,months)+kidsTargetAt(kidGoals,years,postRetireReturnPct);
+  if(adjTotal<=0) return 0;
+  // Check if existing savings alone (with drawdowns) cover target
+  const pvGrown=simulateWithLoans(pv,0,years,annualReturnPct,0,loanGoals,kidGoals);
+  if(pvGrown>=adjTotal) return 0;
+  let lo=0,hi=adjTotal/Math.max(1,months);
+  if(hi<=0) hi=10000;
+  let safetyCount=0;
+  while(simulateWithLoans(pv,hi,years,annualReturnPct,stepUpPct,loanGoals,kidGoals)<adjTotal && safetyCount<30){
+    hi*=2;
+    safetyCount++;
+  }
   for(let i=0;i<80;i++){
     const mid=(lo+hi)/2;
-    const val=simulateStepUp(pv, mid, years, annualReturnPct, stepUpPct);
-    if(val >= fv) hi=mid; else lo=mid;
+    if(simulateWithLoans(pv,mid,years,annualReturnPct,stepUpPct,loanGoals,kidGoals)>=adjTotal) hi=mid; else lo=mid;
   }
   return (lo+hi)/2;
-}
-
-// inflTarget inflates, fixedTarget stays constant
-function monthlyNeededInflAdj(pv, inflTarget, fixedTarget, years, annualReturnPct, stepUpPct, inflPct){
-  const adjTotal = inflTarget * Math.pow(1+inflPct/100, years) + fixedTarget;
-  if(stepUpPct > 0){
-    return monthlyNeeded_stepUp(pv, adjTotal, years, annualReturnPct, stepUpPct);
-  }
-  return monthlyNeeded_flat(pv, adjTotal, years, annualReturnPct);
 }
 
 /* ── Validation ── */
 function getWarnings(){
   const w=[];
-  const rawAge=v('age'), rawRet=v('ret'), rawTAge=v('target-age');
+  const rawAge=v('age'), rawRet=v('ret'), rawRetPost=v('ret-post'), rawTAge=v('target-age');
   if(rawAge > 100) w.push('Age capped at 100.');
   if(rawAge < 0) w.push('Age cannot be negative.');
-  if(rawRet > 50) w.push('Return rate capped at 50%.');
-  if(rawRet > 25 && rawRet <= 50) w.push('Return above 25% is very optimistic — verify your assumption.');
-  if(rawRet < 0) w.push('Return rate cannot be negative.');
+  if(rawRet > 50) w.push('Pre-retirement return rate capped at 50%.');
+  if(rawRet > 25 && rawRet <= 50) w.push('Pre-retirement return above 25% is very optimistic — verify your assumption.');
+  if(rawRet < 0) w.push('Pre-retirement return rate cannot be negative.');
+  if(rawRetPost > 50) w.push('Post-retirement return rate capped at 50%.');
+  if(rawRetPost > 25 && rawRetPost <= 50) w.push('Post-retirement return above 25% is very optimistic — verify your assumption.');
+  if(rawRetPost < 0) w.push('Post-retirement return rate cannot be negative.');
   if(rawTAge > 100) w.push('Target age capped at 100.');
   ['exp','rent','divs','oth','saved','msave'].forEach(id=>{
     const el=document.getElementById(id);
@@ -461,22 +560,28 @@ function getWarnings(){
   });
   return w;
 }
-
 /* ── Chart ── */
+const _colorCache = {};
+let _memoCanvas = null;
 function colorAlpha(cssColor, alpha){
-  const m=cssColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-  if(m) return `rgba(${m[1]},${m[2]},${m[3]},${alpha})`;
-  if(cssColor.startsWith('#')){
-    let hex=cssColor;
-    if(hex.length===4) hex='#'+hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
-    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-    return `rgba(${r},${g},${b},${alpha})`;
+  const key = `${cssColor}_${alpha}`;
+  if(_colorCache[key]) return _colorCache[key];
+  if(!_memoCanvas){
+    _memoCanvas = document.createElement('canvas');
+    _memoCanvas.width = _memoCanvas.height = 1;
   }
-  return cssColor;
+  const ctx = _memoCanvas.getContext('2d');
+  ctx.clearRect(0, 0, 1, 1);
+  ctx.fillStyle = cssColor;
+  ctx.fillRect(0, 0, 1, 1);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  const rgba = `rgba(${r},${g},${b},${alpha})`;
+  _colorCache[key] = rgba;
+  return rgba;
 }
 
-// inflTarget inflates each year, fixedTarget stays flat
-function drawChart(saved, msave, inflTarget, fixedTarget, ret, stepUpPctVal, useStepUp, yrs, inflPct, curAge){
+// inflTarget inflates each year; loans amortize; kid costs PV-discounted
+function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, loanGoals, kidGoals, ret, retPost, stepUpPctVal, useStepUp, yrs, inflPct, curAge){
   const wrap=document.getElementById('chart-wrap');
   const canvas=document.getElementById('growth-chart');
   if(!wrap||!canvas) return;
@@ -500,23 +605,137 @@ function drawChart(saved, msave, inflTarget, fixedTarget, ret, stepUpPctVal, use
   const pad={top:10,right:12,bottom:28,left:50};
   const cw=w-pad.left-pad.right, ch=h-pad.top-pad.bottom;
 
-  // Data
+  // Data — simulate month by month with kid cost drawdowns
   const maxYears=Math.min(Math.max(Math.ceil(yrs*1.35),5),60);
+  const maxMonths=maxYears*12;
   const step=useStepUp?stepUpPctVal:0;
   const pts=[];
+  const drawdowns=[];
   let maxVal=0;
-  for(let yr=0;yr<=maxYears;yr++){
-    const corpus=simulateStepUp(saved,msave,yr,ret,step);
-    const tgt=inflTarget*Math.pow(1+inflPct/100,yr)+fixedTarget;
-    pts.push({year:yr,corpus,target:tgt});
-    maxVal=Math.max(maxVal,corpus,tgt);
+  let cCorpus=saved, cMonthly=msave;
+  const cRate=ret/100/12;
+  const monthlyInfl=Math.pow(1+inflPct/100,1/12)-1;
+  let inflFactor=1;
+
+  // Track which kid goals have been paid (deducted)
+  const kidPaid=new Array(kidGoals.length).fill(false);
+
+  // Month 0 (Year 0)
+  const lTgt0=Math.max(0,inflTarget-fixedPassiveOffset);
+  const tgt0=lTgt0+staticLoansT+loansTargetAt(loanGoals,0)+kidsTargetAt(kidGoals,0,retPost);
+  // Deduct kid costs due at year 0
+  for(let ki=0;ki<kidGoals.length;ki++){
+    if(kidGoals[ki].neededInYears<=0&&kidGoals[ki].inflatedCost>0){
+      cCorpus-=kidGoals[ki].inflatedCost;
+      drawdowns.push({year:0,amount:kidGoals[ki].inflatedCost,label:kidGoals[ki].label||'Expense',cy:cCorpus});
+      kidPaid[ki]=true;
+    }
+  }
+  pts.push({year:0,corpus:cCorpus,target:tgt0});
+  maxVal=Math.max(maxVal,Math.abs(cCorpus),tgt0);
+
+  const crossMo = Math.round(yrs * 12);
+
+  for(let mo=1;mo<=maxMonths;mo++){
+    const yrsNow=mo/12;
+    
+    if (mo <= crossMo) {
+      cCorpus=cCorpus*(1+cRate)+cMonthly+loansEMIBoostAt(loanGoals,mo);
+      if(mo%12===0) cMonthly*=(1+step/100);
+    } else {
+      let activeLoanEMIs = 0;
+      for (const g of loanGoals) {
+        if (mo <= g.tenureMonths) {
+          activeLoanEMIs += g.emi;
+        }
+      }
+      const postRetireRate = retPost / 100 / 12;
+      const livingWithdrawal = Math.max(0, inflTarget * inflFactor - fixedPassiveOffset) / multiplier / 12;
+      const totalWithdrawal = livingWithdrawal + activeLoanEMIs;
+      cCorpus = Math.max(0, cCorpus * (1 + postRetireRate) - totalWithdrawal);
+    }
+    
+    inflFactor*=(1+monthlyInfl);
+    
+    // Deduct kid costs at their due month
+    for(let ki=0;ki<kidGoals.length;ki++){
+      if(!kidPaid[ki]&&kidGoals[ki].neededInYears>0&&yrsNow>=kidGoals[ki].neededInYears){
+        cCorpus=Math.max(0, cCorpus-kidGoals[ki].inflatedCost);
+        drawdowns.push({year:yrsNow,amount:kidGoals[ki].inflatedCost,label:kidGoals[ki].label||'Expense',cy:cCorpus});
+        kidPaid[ki]=true;
+      }
+    }
+
+    const lTgt=Math.max(0,inflTarget*inflFactor-fixedPassiveOffset);
+    const tgt=lTgt+staticLoansT+loansTargetAt(loanGoals,mo)+kidsTargetAt(kidGoals,yrsNow,retPost);
+    pts.push({year:yrsNow,corpus:cCorpus,target:tgt});
+    maxVal=Math.max(maxVal,Math.abs(cCorpus),tgt);
   }
   if(maxVal===0){wrap.style.display='none';return;}
+
+  // True visual intersection: scan pts for where corpus crosses target, then interpolate
+  let crossYr = yrs; // fallback to binary-search answer
+  let crossVal = null;
+  for(let i=1; i<pts.length; i++){
+    const prev=pts[i-1], curr=pts[i];
+    const prevDiff = prev.corpus - prev.target;
+    const currDiff = curr.corpus - curr.target;
+    if(prevDiff <= 0 && currDiff >= 0){ // corpus crosses target upward between i-1 and i
+      const t = prevDiff / (prevDiff - currDiff); // 0..1 fraction within this segment
+      crossYr  = prev.year + t * (curr.year - prev.year);
+      crossVal = prev.corpus + t * (curr.corpus - prev.corpus);
+      break;
+    }
+  }
+  // If no crossing found in pts (e.g. corpus starts above target), just use the dot on target at yrs
+  if(crossVal === null){
+    const lTgt2=Math.max(0,inflTarget*Math.pow(1+inflPct/100,yrs)-fixedPassiveOffset);
+    crossVal = lTgt2+staticLoansT+loansTargetAt(loanGoals,Math.round(yrs*12))+kidsTargetAt(kidGoals,yrs,retPost);
+  }
+
+  // Compute survival target for post-retirement (Option B: decline smoothly to endAge)
+  const endAge = Math.max(curAge + 30, 85);
+  const endMonths = Math.round((endAge - curAge) * 12);
+  const postRetireRate = retPost / 100 / 12;
+  const targetPV = new Array(endMonths + 1).fill(0);
+  
+  targetPV[endMonths] = staticLoansT + loansTargetAt(loanGoals, endMonths) + kidsTargetAt(kidGoals, endAge - curAge, retPost);
+  for(let mo = endMonths - 1; mo >= 0; mo--) {
+    let activeLoanEMIs = 0;
+    for (const g of loanGoals) {
+      if (mo <= g.tenureMonths) {
+        activeLoanEMIs += g.emi;
+      }
+    }
+    const inflFactor = Math.pow(1 + monthlyInfl, mo);
+    const livingWithdrawal = Math.max(0, inflTarget * inflFactor - fixedPassiveOffset) / multiplier / 12;
+    const W = livingWithdrawal + activeLoanEMIs;
+    targetPV[mo] = (targetPV[mo + 1] + W) / (1 + postRetireRate);
+  }
+
+  const visualCrossMo = Math.round(crossYr * 12);
+  const scale = crossVal / (targetPV[visualCrossMo] || 1);
+
+  // Overwrite target for post-retirement points and adjust maxVal
+  pts.forEach(p => {
+    const mo = Math.round(p.year * 12);
+    if (mo > visualCrossMo) {
+      const idxPV = Math.min(mo, endMonths);
+      p.target = targetPV[idxPV] * scale;
+      maxVal = Math.max(maxVal, p.target);
+    }
+  });
 
   const xS=yr=>pad.left+(yr/maxYears)*cw;
   const yS=val=>pad.top+ch-(val/maxVal)*ch;
 
   ctx.clearRect(0,0,w,h);
+
+  // Shaded retirement region
+  if (crossYr < maxYears) {
+    ctx.fillStyle = colorAlpha(mutedClr, 0.03);
+    ctx.fillRect(xS(crossYr), pad.top, xS(maxYears) - xS(crossYr), ch);
+  }
 
   // Grid
   const gridN=4;
@@ -574,26 +793,43 @@ function drawChart(saved, msave, inflTarget, fixedTarget, ret, stepUpPctVal, use
   });
   ctx.stroke();
 
-  // True visual intersection: scan pts for where corpus crosses target, then interpolate
-  let crossYr = yrs; // fallback to binary-search answer
-  let crossVal = null;
-  for(let i=1; i<pts.length; i++){
-    const prev=pts[i-1], curr=pts[i];
-    const prevDiff = prev.corpus - prev.target;
-    const currDiff = curr.corpus - curr.target;
-    if(prevDiff <= 0 && currDiff >= 0){ // corpus crosses target upward between i-1 and i
-      const t = prevDiff / (prevDiff - currDiff); // 0..1 fraction within this 1-yr segment
-      crossYr  = prev.year + t;
-      crossVal = prev.corpus + t * (curr.corpus - prev.corpus);
-      break;
-    }
-  }
-  // If no crossing found in pts (e.g. corpus starts above target), just use the dot on target at yrs
-  if(crossVal === null){
-    crossVal = inflTarget*Math.pow(1+inflPct/100,yrs)+fixedTarget;
-  }
+  // Drawdown markers (kid cost withdrawals)
+  drawdowns.forEach(dd=>{
+    if(dd.year>maxYears) return;
+    const dx=xS(dd.year);
+    const dy=yS(Math.max(0,dd.cy));
+    // Red dot with halo
+    ctx.fillStyle=colorAlpha(dangerClr,0.15);
+    ctx.beginPath();ctx.arc(dx,dy,8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=dangerClr;
+    ctx.beginPath();ctx.arc(dx,dy,3.5,0,Math.PI*2);ctx.fill();
+    // Downward arrow
+    ctx.strokeStyle=dangerClr; ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(dx,dy+4);ctx.lineTo(dx,dy+12);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(dx-3,dy+9);ctx.lineTo(dx,dy+12);ctx.lineTo(dx+3,dy+9);ctx.stroke();
+    // Label
+    ctx.fillStyle=dangerClr;
+    ctx.font='bold 9px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    const lbl=dd.label+' −₹'+chartLabel(dd.amount);
+    const ly=dy>30?dy-10:dy+26;
+    ctx.fillText(lbl,dx,ly);
+  });
+
+  // Vertical divider line and "Retirement Phase" label
   const ix = xS(crossYr);
   const iy = yS(crossVal);
+  // Vertical divider line at retirement
+  if (crossYr < maxYears) {
+    ctx.strokeStyle = colorAlpha(mutedClr, 0.15);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(ix, pad.top);
+    ctx.lineTo(ix, pad.top + ch);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
   ctx.fillStyle=successClr;
   ctx.beginPath();ctx.arc(ix,iy,5,0,Math.PI*2);ctx.fill();
   ctx.fillStyle=colorAlpha(successClr,0.3);
@@ -619,7 +855,7 @@ function saveState(){
       inputs:{},
       kids:[], loans:[]
     };
-    ['exp','rent','divs','oth','age','saved','msave','ret','target-age'].forEach(id=>{
+    ['exp','rent','divs','oth','age','saved','msave','ret','ret-post','target-age'].forEach(id=>{
       const el=document.getElementById(id);
       if(el) state.inputs[id]=el.value;
     });
@@ -638,9 +874,16 @@ function saveState(){
       const id=el.id.replace('l','');
       state.loans.push({
         type:document.getElementById('lt'+id)?.value||'',
-        amt:document.getElementById('la'+id)?.value||''
+        amt:document.getElementById('la'+id)?.value||'',
+        rate:document.getElementById('lr'+id)?.value||'',
+        tenure:document.getElementById('ly'+id)?.value||''
       });
     });
+    state.passiveInflation={
+      rent:document.getElementById('rent-infl')?.checked!==false,
+      divs:document.getElementById('divs-infl')?.checked!==false,
+      oth:document.getElementById('oth-infl')?.checked!==false
+    };
     localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   }catch(e){}
 }
@@ -686,17 +929,26 @@ function loadState(){
       s.loans.forEach(loan=>{
         lN++;const id=lN;
         const d=document.createElement('div');d.className='sc';d.id='l'+id;
-        d.innerHTML=`<button class="rm" onclick="rm('l${id}')" title="Remove">✕</button>
-        <div class="frow">
-          <div class="field"><label>Loan type</label><select id="lt${id}" onchange="calc()"><option>Home loan</option><option>Car loan</option><option>Personal loan</option><option>Education loan</option><option>Business loan</option><option>Other</option></select></div>
-          <div class="field"><label>Outstanding balance</label><div class="iw"><span class="pre">₹</span><input type="number" id="la${id}" placeholder="5000000" oninput="calc()" min="0" value="${loan.amt||''}"></div></div>
-        </div>`;
+        d.innerHTML=loanHtml(id,loan.amt||'',loan.rate||'',loan.tenure||'');
         document.getElementById('ll').appendChild(d);
         if(loan.type){
           const sel=document.getElementById('lt'+id);
-          if(sel){for(let o of sel.options){if(o.text===loan.type){sel.value=loan.type;break;}}}
+          if(sel){
+            let found=false;
+            for(let i=0;i<sel.options.length;i++){
+              if(sel.options[i].text===loan.type){sel.selectedIndex=i;found=true;break;}
+            }
+            if(!found) sel.selectedIndex=0;
+          }
         }
       });
+    }
+
+    // Passive income inflation toggles
+    if(s.passiveInflation){
+      if(s.passiveInflation.rent===false) document.getElementById('rent-infl').checked=false;
+      if(s.passiveInflation.divs===false) document.getElementById('divs-infl').checked=false;
+      if(s.passiveInflation.oth===false) document.getElementById('oth-infl').checked=false;
     }
 
     // Step-up
@@ -734,14 +986,30 @@ function calc(){
   // Read & clamp all inputs
   const expRaw=Math.max(0,v('exp'));
   const annExp=mode==='mo'?expRaw*12:expRaw;
-  const passAnn=Math.max(0,v('rent'))*12 + Math.max(0,v('divs')) + Math.max(0,v('oth'));
+
+  // Passive income — split into inflation-linked vs fixed
+  const rentAnn=Math.max(0,v('rent'))*12;
+  const divsAnn=Math.max(0,v('divs'));
+  const othAnn=Math.max(0,v('oth'));
+  const rentInfl=document.getElementById('rent-infl')?.checked!==false;
+  const divsInfl=document.getElementById('divs-infl')?.checked!==false;
+  const othInfl=document.getElementById('oth-infl')?.checked!==false;
+  const inflLinkedPassive=(rentInfl?rentAnn:0)+(divsInfl?divsAnn:0)+(othInfl?othAnn:0);
+  const fixedPassive=(rentInfl?0:rentAnn)+(divsInfl?0:divsAnn)+(othInfl?0:othAnn);
+  const passAnn=inflLinkedPassive+fixedPassive;
   const adjAnn=Math.max(0,annExp-passAnn);
-  const livingC=adjAnn*multiplier;
+  const passiveCoversExpenses = passAnn >= annExp && annExp > 0;
+
+  // Living corpus components
+  const inflatingTarget=Math.max(0,annExp-inflLinkedPassive)*multiplier;
+  const fixedPassiveOffset=fixedPassive*multiplier;
+  const livingC=adjAnn*multiplier; // for display (today's snapshot)
 
   // Children: inflate each goal at its own rate
   const EDU_DEFAULT_INFL=10, MAR_DEFAULT_INFL=8;
   let kidsTToday=0, kidsTInflated=0;
   const kidDetails=[];
+  const kidGoals=[];
   document.querySelectorAll('.sc[id^="k"]').forEach(el=>{
     const id=el.id.replace('k','');
     const edu=Math.max(0,parseFloat(document.getElementById('ke'+id)?.value)||0);
@@ -754,27 +1022,54 @@ function calc(){
     const marInfl=marYrs>0?mar*Math.pow(1+marRate/100,marYrs):mar;
     kidsTToday+=edu+mar;
     kidsTInflated+=eduInfl+marInfl;
+    if(edu>0) kidGoals.push({inflatedCost:eduInfl, neededInYears:eduYrs, label:'📚 Edu'});
+    if(mar>0) kidGoals.push({inflatedCost:marInfl, neededInYears:marYrs, label:'💍 Wed'});
     if(edu>0||mar>0) kidDetails.push({num:id,edu,mar,eduYrs,marYrs,eduRate,marRate,eduInfl,marInfl});
   });
 
-  // Loans: nominal (no inflation)
-  let loansT=0; const loanB=[];
+  // Loans: with amortization when data available
+  let loansT=0, staticLoansT=0;
+  const loanB=[], loanGoals=[];
   document.querySelectorAll('.sc[id^="l"]').forEach(el=>{
     const id=el.id.replace('l','');
     const amt=Math.max(0,parseFloat(document.getElementById('la'+id)?.value)||0);
     const type=document.getElementById('lt'+id)?.value||'Loan';
-    if(amt>0){loansT+=amt;loanB.push({type,amt});}
+    const rate=Math.max(0,parseFloat(document.getElementById('lr'+id)?.value)||0);
+    const tenureYrs=Math.max(0,parseFloat(document.getElementById('ly'+id)?.value)||0);
+    const tenureMonths=Math.round(tenureYrs*12);
+    const emi=computeEMI(amt,rate,tenureMonths);
+    if(amt>0){
+      loansT+=amt;
+      loanB.push({type,amt,rate,tenureYrs,emi});
+      if(rate>0&&tenureMonths>0){
+        loanGoals.push({outstanding:amt,annualRate:rate,tenureMonths,emi});
+      } else {
+        staticLoansT+=amt;
+      }
+    }
+    // Show EMI info
+    const emiEl=document.getElementById('lemi'+id);
+    if(emiEl){
+      if(amt>0&&rate>0&&tenureMonths>0){
+        emiEl.innerHTML='EMI: <strong>'+inr(emi)+'/mo</strong> · Ends in '+tenureYrs+' yrs';
+        emiEl.style.color='var(--success)';
+      } else if(amt>0){
+        emiEl.innerHTML='<span style="color:var(--hint)">Add rate & tenure for amortization</span>';
+        emiEl.style.color='';
+      } else {
+        emiEl.textContent='';
+      }
+    }
   });
 
-  // Split target: inflating part vs fixed part
-  const inflatingTarget=livingC;                      // inflates over timeline
-  const fixedTarget=kidsTInflated+loansT;              // already at final values
-  const target=inflatingTarget+fixedTarget;            // total for display
+  // Display target (today's snapshot — breakdown uses raw values for transparency)
+  const target=livingC+kidsTInflated+loansT;
 
   const curAge=clamp(v('age'),0,100);
   const saved=Math.max(0,v('saved'));
   const msave=Math.max(0,v('msave'));
   const ret=clamp(v('ret')||10,0,50);
+  const retPost=clamp(v('ret-post')||7,0,50);
   const targetAge=clamp(v('target-age'),0,100);
   const useStepUp = stepUpActive && stepUpPct > 0;
 
@@ -788,17 +1083,19 @@ function calc(){
   // Validation warnings
   const warns=getWarnings();
 
-  // Target age reverse calculation (inflation-adjusted)
+  // Target age reverse calculation (inflation-adjusted + amortized + PV)
   const trw=document.getElementById('target-result-wrap');
   if(annExp>0 && targetAge>0 && curAge>0 && targetAge>curAge){
     const yrsToTarget=targetAge-curAge;
-    const adjTargetForAge=inflatingTarget*Math.pow(1+inflPct/100,yrsToTarget)+fixedTarget;
+    const monthsToTarget=Math.round(yrsToTarget*12);
+    const adjLivingTgt=Math.max(0,inflatingTarget*Math.pow(1+inflPct/100,yrsToTarget)-fixedPassiveOffset);
+    const adjTargetForAge=adjLivingTgt+staticLoansT+loansTargetAt(loanGoals,monthsToTarget)+kidsTargetAt(kidGoals,yrsToTarget,retPost);
     let needed, stepNote='';
     if(useStepUp){
-      needed=monthlyNeededInflAdj(saved,inflatingTarget,fixedTarget,yrsToTarget,ret,stepUpPct,inflPct);
+      needed=monthlyNeededInflAdj(saved,inflatingTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,yrsToTarget,ret,retPost,stepUpPct,inflPct);
       stepNote=` (starting amount, grows ${stepUpPct}%/yr)`;
     } else {
-      needed=monthlyNeededInflAdj(saved,inflatingTarget,fixedTarget,yrsToTarget,ret,0,inflPct);
+      needed=monthlyNeededInflAdj(saved,inflatingTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,yrsToTarget,ret,retPost,0,inflPct);
     }
     if(needed<=0 || saved>=adjTargetForAge){
       trw.innerHTML=`<div class="target-result g"><div class="trl">To be free by age ${targetAge}</div><div class="trv">Already there! 🎉</div><div class="trsub">Your current corpus meets the inflation-adjusted target.</div></div>`;
@@ -825,13 +1122,24 @@ function calc(){
 
   const pct=target>0?Math.min(100,Math.round(saved/target*100)):0;
   let mHtml=`<div class="metrics"><div class="met"><div class="ml">Annual expenses</div><div class="mv">${inr(annExp)}</div></div>`;
-  if(passAnn>0) mHtml+=`<div class="met"><div class="ml">Passive income / yr</div><div class="mv g">${inr(passAnn)}</div></div><div class="met"><div class="ml">Adjusted expenses / yr</div><div class="mv">${inr(adjAnn)}</div></div>`;
+  if(passAnn>0){
+    let passNote='';
+    if(fixedPassive>0&&inflLinkedPassive>0) passNote=' <span style="font-size:11px;color:var(--hint)">('+inrs(inflLinkedPassive)+' grows · '+inrs(fixedPassive)+' fixed)</span>';
+    else if(fixedPassive>0) passNote=' <span style="font-size:11px;color:var(--hint)">(fixed)</span>';
+    mHtml+=`<div class="met"><div class="ml">Passive income / yr${passNote}</div><div class="mv g">${inr(passAnn)}</div></div><div class="met"><div class="ml">Adjusted expenses / yr</div><div class="mv">${inr(adjAnn)}</div></div>`;
+  }
   mHtml+='</div>';
 
   // Warnings
   let warnHtml='';
   if(warns.length>0){
     warnHtml=`<div class="warn-bar">${warns.map(w=>'<span>⚠ '+w+'</span>').join('')}</div>`;
+  }
+
+  // Passive income banner
+  let passiveBanner='';
+  if(passiveCoversExpenses){
+    passiveBanner=`<div class="free-banner"><p>💰 Passive income covers all living expenses!</p><p>Your corpus target only includes children's costs and outstanding loans.</p></div>`;
   }
 
   // Breakdown
@@ -846,16 +1154,22 @@ function calc(){
       bHtml+=`<div class="brow"><span class="bl">Child ${k.num} — Marriage${note}</span><span class="bv">${inr(k.marInfl)}</span></div>`;
     }
   });
-  loanB.forEach(lb=>{bHtml+=`<div class="brow"><span class="bl">${lb.type} <span style="font-size:11px;color:var(--hint)">(face value)</span></span><span class="bv">${inr(lb.amt)}</span></div>`;});
+  loanB.forEach(lb=>{
+    let detail='(face value)';
+    if(lb.rate>0&&lb.tenureYrs>0) detail=`(EMI ${inrs(lb.emi)}/mo · ${lb.tenureYrs}yr remaining)`;
+    bHtml+=`<div class="brow"><span class="bl">${lb.type} <span style="font-size:11px;color:var(--hint)">${detail}</span></span><span class="bv">${inr(lb.amt)}</span></div>`;
+  });
   bHtml+=`<div class="brow tr"><span class="bl">Total corpus needed</span><span class="bv">${inr(target)}</span></div>`;
 
   let timeHtml='';
   let chartHtml='';
   if(saved>0||msave>0){
-    // Inflation-adjusted timeline
+    // Inflation-adjusted timeline with amortization + PV
     const effStepUp=useStepUp?stepUpPct:0;
-    const yrs=yearsToFreedomInflAdj(saved,msave,inflatingTarget,fixedTarget,ret,effStepUp,inflPct);
-    const totalInflated=isFinite(yrs)?inflatingTarget*Math.pow(1+inflPct/100,yrs)+fixedTarget:target;
+    const yrs=yearsToFreedomInflAdj(saved,msave,inflatingTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,ret,retPost,effStepUp,inflPct);
+    const yrsMonths=isFinite(yrs)?Math.round(yrs*12):0;
+    const adjLivTgt=isFinite(yrs)?Math.max(0,inflatingTarget*Math.pow(1+inflPct/100,yrs)-fixedPassiveOffset):0;
+    const totalInflated=isFinite(yrs)?adjLivTgt+staticLoansT+loansTargetAt(loanGoals,yrsMonths)+kidsTargetAt(kidGoals,yrs,retPost):target;
     const freeAge=curAge>0&&yrs<Infinity?curAge+yrs:null;
     const progBar=`<div class="prog-wrap"><div class="prog-label"><span>${pct}% of corpus reached</span><span>${inr(saved)} of ${inr(target)}</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;
     let tb='';
@@ -886,7 +1200,8 @@ function calc(){
           <span class="chart-title">Corpus Growth vs Inflation-Adjusted Target</span>
           <div class="chart-legend">
             <span class="legend-item"><span class="ldot solid"></span>Corpus</span>
-            <span class="legend-item"><span class="ldot dashed"></span>Target</span>
+            <span class="legend-item"><span class="ldot dashed"></span>Target</span>${kidGoals.length>0?`
+            <span class="legend-item"><span class="ldot" style="background:var(--danger);border-radius:50%"></span>Drawdown</span>`:''}
           </div>
         </div>
         <canvas id="growth-chart"></canvas>
@@ -894,22 +1209,16 @@ function calc(){
     }
     timeHtml=`<div class="divider"></div><p class="timeline-hd">Timeline</p>${progBar}${tb}${chartHtml}`;
 
-    // Draw chart after DOM update
-    setTimeout(()=>{
-      if(yrs>0 && yrs<Infinity && yrs<=80){
-        drawChart(saved,msave,inflatingTarget,fixedTarget,ret,stepUpPct,useStepUp,yrs,inflPct,curAge);
-      }
-    },0);
   }
 
-  rbd.innerHTML=warnHtml+mHtml+bHtml+timeHtml;
+  rbd.innerHTML=warnHtml+passiveBanner+mHtml+bHtml+timeHtml;
 
   // Re-trigger chart draw after innerHTML (canvas needs to be in DOM)
   if(saved>0||msave>0){
     const effStepUp2=useStepUp?stepUpPct:0;
-    const yrs2=yearsToFreedomInflAdj(saved,msave,inflatingTarget,fixedTarget,ret,effStepUp2,inflPct);
+    const yrs2=yearsToFreedomInflAdj(saved,msave,inflatingTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,ret,retPost,effStepUp2,inflPct);
     if(yrs2>0 && isFinite(yrs2) && yrs2<=80){
-      requestAnimationFrame(()=>drawChart(saved,msave,inflatingTarget,fixedTarget,ret,stepUpPct,useStepUp,yrs2,inflPct,curAge));
+      requestAnimationFrame(()=>drawChart(saved,msave,inflatingTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,ret,retPost,stepUpPct,useStepUp,yrs2,inflPct,curAge));
     }
   }
 
