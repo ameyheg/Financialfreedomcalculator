@@ -406,13 +406,9 @@ function simulateStepUp(pv, initMonthly, years, annualReturnPct, stepUpPct){
 function kidsTargetAt(kidGoals, years, postRetireReturnPct){
   let t=0;
   for(const g of kidGoals){
-    if(g.neededInYears<=0||years<g.neededInYears){
+    if(years<g.neededInYears){
       const gap=g.neededInYears-years;
-      if(gap>0){
-        t+=g.inflatedCost/Math.pow(1+postRetireReturnPct/100,gap);
-      } else {
-        t+=g.inflatedCost;
-      }
+      t+=g.inflatedCost/Math.pow(1+postRetireReturnPct/100,gap);
     }
   }
   return t;
@@ -485,15 +481,23 @@ function simulateWithLoans(pv,initMonthly,years,annualReturnPct,stepUpPct,loanGo
 /* ── Inflation-adjusted: years to freedom ── */
 // Month-by-month with loan amortization, EMI boost, kid cost drawdowns
 function yearsToFreedomInflAdj(pv,initMonthly,inflTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,annualReturnPct,postRetireReturnPct,stepUpPct,inflPct){
+  let corpus=pv;
+  const kidPaid=new Array(kidGoals ? kidGoals.length : 0).fill(false);
+  if(kidGoals){
+    for(let ki=0;ki<kidGoals.length;ki++){
+      if(kidGoals[ki].neededInYears<=0&&kidGoals[ki].inflatedCost>0){
+        corpus=Math.max(0, corpus-kidGoals[ki].inflatedCost);
+        kidPaid[ki]=true;
+      }
+    }
+  }
   const totalNow=Math.max(0,inflTarget-fixedPassiveOffset)+staticLoansT+loansTargetAt(loanGoals,0)+kidsTargetAt(kidGoals,0,postRetireReturnPct);
-  if(pv>=totalNow) return 0;
-  if(initMonthly<=0&&pv<=0) return Infinity;
+  if(corpus>=totalNow) return 0;
+  if(initMonthly<=0&&corpus<=0) return Infinity;
   const monthlyRate=annualReturnPct/100/12;
   const monthlyInfl=Math.pow(1+inflPct/100,1/12)-1;
-  let corpus=pv, monthly=initMonthly, inflFactor=1;
+  let monthly=initMonthly, inflFactor=1;
   const maxMonths=80*12;
-  // Track which kid goals have been paid (deducted)
-  const kidPaid=new Array(kidGoals.length).fill(false);
   for(let mo=1;mo<=maxMonths;mo++){
     corpus=corpus*(1+monthlyRate)+monthly+loansEMIBoostAt(loanGoals,mo);
     inflFactor*=(1+monthlyInfl);
@@ -626,7 +630,7 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
   // Deduct kid costs due at year 0
   for(let ki=0;ki<kidGoals.length;ki++){
     if(kidGoals[ki].neededInYears<=0&&kidGoals[ki].inflatedCost>0){
-      cCorpus-=kidGoals[ki].inflatedCost;
+      cCorpus=Math.max(0, cCorpus-kidGoals[ki].inflatedCost);
       drawdowns.push({year:0,amount:kidGoals[ki].inflatedCost,label:kidGoals[ki].label||'Expense',cy:cCorpus});
       kidPaid[ki]=true;
     }
