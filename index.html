@@ -707,9 +707,17 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
         activeLoanEMIs += g.emi;
       }
     }
+    let kidCostsDue = 0;
+    if (kidGoals) {
+      for (const k of kidGoals) {
+        if (k.neededInYears > 0 && Math.round(k.neededInYears * 12) === mo) {
+          kidCostsDue += k.inflatedCost;
+        }
+      }
+    }
     const inflFactor = Math.pow(1 + monthlyInfl, mo);
     const livingWithdrawal = Math.max(0, inflTarget * inflFactor - fixedPassiveOffset) / multiplier / 12;
-    const W = livingWithdrawal + activeLoanEMIs;
+    const W = livingWithdrawal + activeLoanEMIs + kidCostsDue;
     targetPV[mo] = (targetPV[mo + 1] + W) / (1 + postRetireRate);
   }
 
@@ -1016,8 +1024,10 @@ function calc(){
     const mar=Math.max(0,parseFloat(document.getElementById('km'+id)?.value)||0);
     const eduYrs=Math.max(0,parseFloat(document.getElementById('key'+id)?.value)||0);
     const marYrs=Math.max(0,parseFloat(document.getElementById('kmy'+id)?.value)||0);
-    const eduRate=parseFloat(document.getElementById('kei'+id)?.value)||EDU_DEFAULT_INFL;
-    const marRate=parseFloat(document.getElementById('kmi'+id)?.value)||MAR_DEFAULT_INFL;
+    const rawEduRate=parseFloat(document.getElementById('kei'+id)?.value);
+    const eduRate=!isNaN(rawEduRate)?rawEduRate:EDU_DEFAULT_INFL;
+    const rawMarRate=parseFloat(document.getElementById('kmi'+id)?.value);
+    const marRate=!isNaN(rawMarRate)?rawMarRate:MAR_DEFAULT_INFL;
     const eduInfl=eduYrs>0?edu*Math.pow(1+eduRate/100,eduYrs):edu;
     const marInfl=marYrs>0?mar*Math.pow(1+marRate/100,marYrs):mar;
     kidsTToday+=edu+mar;
@@ -1068,8 +1078,10 @@ function calc(){
   const curAge=clamp(v('age'),0,100);
   const saved=Math.max(0,v('saved'));
   const msave=Math.max(0,v('msave'));
-  const ret=clamp(v('ret')||10,0,50);
-  const retPost=clamp(v('ret-post')||7,0,50);
+  const rawRet = parseFloat(document.getElementById('ret')?.value);
+  const ret = clamp(!isNaN(rawRet) ? rawRet : 10, 0, 50);
+  const rawRetPost = parseFloat(document.getElementById('ret-post')?.value);
+  const retPost = clamp(!isNaN(rawRetPost) ? rawRetPost : 7, 0, 50);
   const targetAge=clamp(v('target-age'),0,100);
   const useStepUp = stepUpActive && stepUpPct > 0;
 
