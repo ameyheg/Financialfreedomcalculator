@@ -491,7 +491,7 @@ function yearsToFreedomInflAdj(pv,initMonthly,inflTarget,fixedPassiveOffset,stat
       }
     }
   }
-  const totalNow=inflTarget+staticLoansT+loansTargetAt(loanGoals,0)+kidsTargetAt(kidGoals,0,postRetireReturnPct);
+  const totalNow=Math.max(0,inflTarget-fixedPassiveOffset)+staticLoansT+loansTargetAt(loanGoals,0)+kidsTargetAt(kidGoals,0,postRetireReturnPct);
   if(corpus>=totalNow) return 0;
   if(initMonthly<=0&&corpus<=0) return Infinity;
   const monthlyRate=annualReturnPct/100/12;
@@ -512,7 +512,7 @@ function yearsToFreedomInflAdj(pv,initMonthly,inflTarget,fixedPassiveOffset,stat
     }
     // Target no longer includes paid kid costs (kidsTargetAt handles this)
     const yrsNow=mo/12;
-    const livingTgt=inflTarget*inflFactor;
+    const livingTgt=Math.max(0,inflTarget*inflFactor-fixedPassiveOffset);
     const tgt=livingTgt+staticLoansT+loansTargetAt(loanGoals,mo)+kidsTargetAt(kidGoals,yrsNow,postRetireReturnPct);
     if(corpus>=tgt) return yrsNow;
   }
@@ -526,7 +526,7 @@ function monthlyNeededInflAdj(pv,inflTarget,fixedPassiveOffset,staticLoansT,loan
   if(years<=0) return Infinity;
   const months=Math.round(years*12);
   // Target at end = living + remaining loans + remaining kid costs (those due AFTER target year)
-  const livingTgt=inflTarget*Math.pow(1+inflPct/100,years);
+  const livingTgt=Math.max(0,inflTarget*Math.pow(1+inflPct/100,years)-fixedPassiveOffset);
   const adjTotal=livingTgt+staticLoansT+loansTargetAt(loanGoals,months)+kidsTargetAt(kidGoals,years,postRetireReturnPct);
   if(adjTotal<=0) return 0;
   // Check if existing savings alone (with drawdowns) cover target
@@ -626,7 +626,7 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
   const kidPaid=new Array(kidGoals.length).fill(false);
 
   // Month 0 (Year 0)
-  const lTgt0=inflTarget;
+  const lTgt0=Math.max(0,inflTarget-fixedPassiveOffset);
   const tgt0=lTgt0+staticLoansT+loansTargetAt(loanGoals,0)+kidsTargetAt(kidGoals,0,retPost);
   // Deduct kid costs due at year 0
   for(let ki=0;ki<kidGoals.length;ki++){
@@ -643,7 +643,9 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
 
   for(let mo=1;mo<=maxMonths;mo++){
     const yrsNow=mo/12;
-    
+    // Update inflFactor first so both withdrawal and target use current month's inflation
+    inflFactor*=(1+monthlyInfl);
+
     if (mo <= crossMo) {
       cCorpus=cCorpus*(1+cRate)+cMonthly+loansEMIBoostAt(loanGoals,mo);
       if(mo%12===0) cMonthly*=(1+step/100);
@@ -655,14 +657,12 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
         }
       }
       const postRetireRate = retPost / 100 / 12;
-      // inflTarget = (annExp - inflLinkedPassive) * multiplier, so divide by multiplier to get annual expense net of inflation-linked passive,
-      // then subtract fixedPassive (annual) and divide by 12 for monthly withdrawal.
+      // inflTarget = (annExp - inflLinkedPassive) * multiplier — divide by multiplier to get
+      // annual expense, subtract fixed passive, divide by 12 for monthly withdrawal.
       const livingWithdrawal = Math.max(0, (inflTarget / multiplier) * inflFactor - fixedPassiveOffset / multiplier) / 12;
       const totalWithdrawal = livingWithdrawal + activeLoanEMIs;
       cCorpus = Math.max(0, cCorpus * (1 + postRetireRate) - totalWithdrawal);
     }
-    
-    inflFactor*=(1+monthlyInfl);
     
     // Deduct kid costs at their due month (integer month comparison avoids float drift)
     for(let ki=0;ki<kidGoals.length;ki++){
@@ -674,7 +674,7 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
       }
     }
 
-    const lTgt=inflTarget*inflFactor;
+    const lTgt=Math.max(0,inflTarget*inflFactor-fixedPassiveOffset);
     const tgt=lTgt+staticLoansT+loansTargetAt(loanGoals,mo)+kidsTargetAt(kidGoals,yrsNow,retPost);
     pts.push({year:yrsNow,corpus:cCorpus,target:tgt});
     maxVal=Math.max(maxVal,Math.abs(cCorpus),tgt);
@@ -697,7 +697,7 @@ function drawChart(saved, msave, inflTarget, fixedPassiveOffset, staticLoansT, l
   }
   // If no crossing found in pts (e.g. corpus starts above target), just use the dot on target at yrs
   if(crossVal === null){
-    const lTgt2=inflTarget*Math.pow(1+inflPct/100,yrs);
+    const lTgt2=Math.max(0,inflTarget*Math.pow(1+inflPct/100,yrs)-fixedPassiveOffset);
     crossVal = lTgt2+staticLoansT+loansTargetAt(loanGoals,Math.round(yrs*12))+kidsTargetAt(kidGoals,yrs,retPost);
   }
 
@@ -1117,7 +1117,7 @@ function calc(){
   if(annExp>0 && targetAge>0 && curAge>0 && targetAge>curAge){
     const yrsToTarget=targetAge-curAge;
     const monthsToTarget=Math.round(yrsToTarget*12);
-    const adjLivingTgt=inflatingTarget*Math.pow(1+inflPct/100,yrsToTarget);
+    const adjLivingTgt=Math.max(0,inflatingTarget*Math.pow(1+inflPct/100,yrsToTarget)-fixedPassiveOffset);
     const adjTargetForAge=adjLivingTgt+staticLoansT+loansTargetAt(loanGoals,monthsToTarget)+kidsTargetAt(kidGoals,yrsToTarget,retPost);
     let needed, stepNote='';
     if(useStepUp){
@@ -1192,12 +1192,12 @@ function calc(){
 
   let timeHtml='';
   let chartHtml='';
-  if(saved>0||msave>0){
+  if(saved>0||msave>0||passiveCoversExpenses){
     // Inflation-adjusted timeline with amortization + PV
     const effStepUp=useStepUp?stepUpPct:0;
     const yrs=yearsToFreedomInflAdj(saved,msave,inflatingTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,ret,retPost,effStepUp,inflPct);
     const yrsMonths=isFinite(yrs)?Math.round(yrs*12):0;
-    const adjLivTgt=isFinite(yrs)?inflatingTarget*Math.pow(1+inflPct/100,yrs):0;
+    const adjLivTgt=isFinite(yrs)?Math.max(0,inflatingTarget*Math.pow(1+inflPct/100,yrs)-fixedPassiveOffset):0;
     const totalInflated=isFinite(yrs)?adjLivTgt+staticLoansT+loansTargetAt(loanGoals,yrsMonths)+kidsTargetAt(kidGoals,yrs,retPost):target;
     const freeAge=curAge>0&&yrs<Infinity?curAge+yrs:null;
     const progBar=`<div class="prog-wrap"><div class="prog-label"><span>${pct}% of today's target reached</span><span>${inr(saved)} of ${inr(target)} (today)</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;
@@ -1243,7 +1243,7 @@ function calc(){
   rbd.innerHTML=warnHtml+passiveBanner+mHtml+bHtml+timeHtml;
 
   // Re-trigger chart draw after innerHTML (canvas needs to be in DOM)
-  if(saved>0||msave>0){
+  if(saved>0||msave>0||passiveCoversExpenses){
     const effStepUp2=useStepUp?stepUpPct:0;
     const yrs2=yearsToFreedomInflAdj(saved,msave,inflatingTarget,fixedPassiveOffset,staticLoansT,loanGoals,kidGoals,ret,retPost,effStepUp2,inflPct);
     if(yrs2>0 && isFinite(yrs2) && yrs2<=80){
